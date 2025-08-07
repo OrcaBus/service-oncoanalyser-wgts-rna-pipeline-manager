@@ -1,4 +1,4 @@
-Template Service
+Oncoanalyser WGTS RNA Pipeline Orchestration Service
 ================================================================================
 
 - [Description](#description)
