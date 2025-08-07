@@ -37,7 +37,7 @@ Description
 ### Summary
 
 This is the Oncoanalyser WGTS RNA Pipeline Management service,
-resposible for orchestrating the Oncoanalyser WGTS RNA analyses.
+responsible for orchestrating the Oncoanalyser WGTS RNA analyses.
 
 The pipeline runs on ICAv2 through Nextflow (version 24.10)
 

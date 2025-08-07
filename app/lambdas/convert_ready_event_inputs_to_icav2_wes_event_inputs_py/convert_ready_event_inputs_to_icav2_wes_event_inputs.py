@@ -141,37 +141,37 @@ def handler(event, context):
 
     return {
         "inputs": convert_ready_event_inputs_to_icav2_wes_event_inputs(
-            event
+            event['inputs']
         )
     }
 
 
-if __name__ == "__main__":
-    import json
-
-    print(json.dumps(
-        handler(
-            {
-                "groupId": "SBJ12345",
-                "subjectId": "SBJ12345",
-                "sampleId": "L2500971",
-                "fastqListRows": [
-                    {
-                        "lane": 1,
-                        "rgcn": "UMCCR",
-                        "rgds": "Library ID: L2500971 / Sequenced on 4 Aug 2025 at UMCCR / Phenotype: tumor / Assay: ISTRL / Type: WTS",
-                        "rgdt": "2025-08-04",
-                        "rgid": "CCATCTCGCC+AACCATAGAA.1.250804_A01052_0270_AHFGLKDSXF",
-                        "rglb": "L2500971",
-                        "rgpl": "Illumina",
-                        "rgsm": "L2500971",
-                        "read1FileUri": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/primary/250804_A01052_0270_AHFGLKDSXF/202508054990a85a/Samples/Lane_1/L2500971/L2500971_S8_L001_R1_001.fastq.ora",
-                        "read2FileUri": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/primary/250804_A01052_0270_AHFGLKDSXF/202508054990a85a/Samples/Lane_1/L2500971/L2500971_S8_L001_R2_001.fastq.ora"
-                    }
-                ],
-                "refDataHmfDataPath": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/ref-data/",
-            },
-            None
-        ),
-        indent=4
-    ))
+# if __name__ == "__main__":
+#     import json
+#
+#     print(json.dumps(
+#         handler(
+#             {
+#                 "groupId": "SBJ12345",
+#                 "subjectId": "SBJ12345",
+#                 "sampleId": "L2500971",
+#                 "fastqListRows": [
+#                     {
+#                         "lane": 1,
+#                         "rgcn": "UMCCR",
+#                         "rgds": "Library ID: L2500971 / Sequenced on 4 Aug 2025 at UMCCR / Phenotype: tumor / Assay: ISTRL / Type: WTS",
+#                         "rgdt": "2025-08-04",
+#                         "rgid": "CCATCTCGCC+AACCATAGAA.1.250804_A01052_0270_AHFGLKDSXF",
+#                         "rglb": "L2500971",
+#                         "rgpl": "Illumina",
+#                         "rgsm": "L2500971",
+#                         "read1FileUri": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/primary/250804_A01052_0270_AHFGLKDSXF/202508054990a85a/Samples/Lane_1/L2500971/L2500971_S8_L001_R1_001.fastq.ora",
+#                         "read2FileUri": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/primary/250804_A01052_0270_AHFGLKDSXF/202508054990a85a/Samples/Lane_1/L2500971/L2500971_S8_L001_R2_001.fastq.ora"
+#                     }
+#                 ],
+#                 "refDataHmfDataPath": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/ref-data/",
+#             },
+#             None
+#         ),
+#         indent=4
+#     ))

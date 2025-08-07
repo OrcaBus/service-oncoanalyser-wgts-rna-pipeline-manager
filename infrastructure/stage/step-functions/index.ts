@@ -35,8 +35,8 @@ function createStateMachineDefinitionSubstitutions(props: BuildStepFunctionProps
 
   /* Substitute lambdas in the state machine definition */
   for (const lambdaObject of lambdaFunctions) {
-    const sfnSubtitutionKey = `__${camelCaseToSnakeCase(lambdaObject.lambdaName)}_lambda_function_arn__`;
-    definitionSubstitutions[sfnSubtitutionKey] =
+    const sfnSubstitutionKey = `__${camelCaseToSnakeCase(lambdaObject.lambdaName)}_lambda_function_arn__`;
+    definitionSubstitutions[sfnSubstitutionKey] =
       lambdaObject.lambdaFunction.currentVersion.functionArn;
   }
 
