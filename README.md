@@ -31,12 +31,26 @@ Template Service
   - [Glossary \& References](#glossary--references)
 
 
-Service Description
+Description
 --------------------------------------------------------------------------------
 
-### Name & responsibility
+### Summary
 
-### Description
+This is the Oncoanalyser WGTS RNA Pipeline Management service,
+responsible for orchestrating the Oncoanalyser WGTS RNA analyses.
+
+The pipeline runs on ICAv2 through Nextflow (version 24.10)
+
+### Events Overview
+
+**Ready Event**
+We listen to READY WRSC events where the workflow name is equal to `oncoanalyser-wgts-rna`
+
+**ICAv2 WES Analysis State Change**
+We then parse ICAv2 Analysis State Change events to update the state of the workflow in our service.
+
+
+![events-overview](docs/draw-io-exports/oncoanalyser-wgts-rna-pipeline.drawio.svg)
 
 ### API Endpoints
 
@@ -46,30 +60,107 @@ The Swagger documentation of the production endpoint is available here:
 
 ### Consumed Events
 
-| Name / DetailType | Source         | Schema Link       | Description         |
-|-------------------|----------------|-------------------|---------------------|
-| `SomeServiceStateChange` | `orcabus.someservice` | <schema link> | Announces service state changes |
+| Name / DetailType             | Source             | Schema Link   | Description                           |
+|-------------------------------|--------------------|---------------|---------------------------------------|
+| `WorkflowRunStateChange`      | `orcabus.any`      | <schema link> | READY statechange // TODO             |
+| `Icav2WesAnalysisStateChange` | `orcabus.icav2wes` | <schema link> | ICAv2 WES Analysis State Change event |
 
 ### Published Events
 
-| Name / DetailType | Source         | Schema Link       | Description         |
-|-------------------|----------------|-------------------|---------------------|
-| `TemplateStateChange` | `orcabus.templatemanager` | <schema link> | Announces Template data state changes |
+| Name / DetailType        | Source                        | Schema Link   | Description           |
+|--------------------------|-------------------------------|---------------|-----------------------|
+| `WorkflowRunStateChange` | `orcabus.oncoanalyserwgtsrna` | <schema link> | Analysis state change |
 
 
-### (Internal) Data states & persistence model
+### Ready Event Example
 
-### Major Business Rules
+Ready event minimal example
 
-### Permissions & Access Control
+<details>
 
-### Change Management
+<summary>Click to expand</summary>
 
-#### Versioning strategy
+```json5
+{
+  "EventBusName": "OrcaBusMain",
+  "Source": "orcabus.manual",
+  "DetailType": "WorkflowRunStateChange",
+  "Detail": {
+    "status": "READY",
+    "timestamp": "2025-08-06T04:39:31Z",
+    "workflowName": "oncoanalyser-wgts-rna",
+    "workflowVersion": "2.1.0",
+    "workflowRunName": "umccr--automated--oncoanalyser-wgts-rna--2-1-0--20250606abcd6789",
+    "portalRunId": "20250606abcd6789", // pragma: allowlist secret
+    "linkedLibraries": [
+      {
+        "orcabusId": "lib.01JBB5Y3DZ55KF4D5KVMJP7DSN",
+        "libraryId": "L2401540"
+      }
+    ],
+    "payload": {
+      "version": "2025.08.05",
+      "data": {
+        "tags": {
+          "libraryId": "L2401540",
+          "subjectId": "9689947",
+          "individualId": "SBJ05828",
+          "fastqRgidList": [
+            "GGACTTGG+CGTCTGCG.2.241024_A00130_0336_BHW7MVDSXC"
+          ]
+        },
+        "inputs": {
+          "mode": "wgts",
+          "groupId": "SBJ05828",
+          "subjectId": "SBJ05828",
+          "sampleId": "L2401540",
+          "fastqListRows": [
+            {
+              "lane": 1,
+              "rgcn": "UMCCR",
+              "rgds": "Library ID: L2500971 / Sequenced on 4 Aug 2025 at UMCCR / Phenotype: tumor / Assay: ISTRL / Type: WTS",
+              "rgdt": "2025-08-04",
+              "rgid": "CCATCTCGCC+AACCATAGAA.1.250804_A01052_0270_AHFGLKDSXF",
+              "rglb": "L2500971",
+              "rgpl": "Illumina",
+              "rgsm": "L2500971",
+              "read1FileUri": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/primary/250804_A01052_0270_AHFGLKDSXF/202508054990a85a/Samples/Lane_1/L2500971/L2500971_S8_L001_R1_001.fastq.ora",
+              "read2FileUri": "s3://pipeline-prod-cache-503977275616-ap-southeast-2/byob-icav2/production/primary/250804_A01052_0270_AHFGLKDSXF/202508054990a85a/Samples/Lane_1/L2500971/L2500971_S8_L001_R2_001.fastq.ora"
+            }
+          ],
+          "genome": "GRCh38_umccr",
+          "genomeVersion": "38",
+          "genomeType": "alt",
+          "forceGenome": true,
+          "refDataHmfDataPath": "s3://path-to-reference-data/oncoanalyser/hmf-reference-data/hmftools/hmf_pipeline_resources.38_v2.1.0--1/",
+          "genomes": {
+            "GRCh38_umccr": {
+              "fasta": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/GRCh38_full_analysis_set_plus_decoy_hla.fa",
+              "fai": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/samtools_index/1.16/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai",
+              "dict": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/samtools_index/1.16/GRCh38_full_analysis_set_plus_decoy_hla.fa.dict",
+              "img": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/bwa_index_image/0.7.17-r1188/GRCh38_full_analysis_set_plus_decoy_hla.fa.img",
+              "bwamem2Index": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/bwa-mem2_index/2.2.1/",
+              "gridssIndex": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/gridss_index/2.13.2/",
+              "starIndex": "s3://path-to-reference-data/oncoanalyser/GRCh38_umccr/star_index/gencode_38/2.7.3a/"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
 
-E.g. Manual tagging of git commits following Semantic Versioning (semver) guidelines.
+</details>
 
-#### Release management
+#### Manually Validating Schemas,
+
+We have generated JSON Schemas for the complete draft event which you can find in the [`./app/event-schemas`](app/event-schemas) directory.
+
+You can interactively check if your DRAFT or READY event matches the schema using the following links: :construction:
+
+
+#### Release management :construction:
 
 The service employs a fully automated CI/CD pipeline that automatically builds and releases all changes to the `main` code branch.
 

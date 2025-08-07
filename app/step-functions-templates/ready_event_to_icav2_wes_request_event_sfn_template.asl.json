@@ -1,0 +1,163 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Save env vars",
+  "States": {
+    "Save env vars": {
+      "Type": "Pass",
+      "Next": "Decompress ORAs",
+      "Assign": {
+        "readyEventDetail": "{% $states.input %}",
+        "inputs": "{% $states.input.payload.data.inputs %}",
+        "engineParameters": "{% $states.input.payload.data.engineParameters %}"
+      }
+    },
+    "Decompress ORAs": {
+      "Type": "Parallel",
+      "Next": "Convert ready event data inputs to icav2 wes event inputs",
+      "Branches": [
+        {
+          "StartAt": "Get fastq ids from fastq rgids",
+          "States": {
+            "Get fastq ids from fastq rgids": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Arguments": {
+                "FunctionName": "${__get_fastq_id_list_from_rgid_list_lambda_function_arn__}",
+                "Payload": {
+                  "fastqRgidList": "{% [ $inputs.fastqListRows.(rgid) ] %}"
+                }
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2,
+                  "JitterStrategy": "FULL"
+                }
+              ],
+              "Output": {
+                "fastqIdList": "{% $states.result.Payload.fastqIdList %}"
+              },
+              "Next": "Decompress ORA Files"
+            },
+            "Decompress ORA Files": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::events:putEvents.waitForTaskToken",
+              "Arguments": {
+                "Entries": [
+                  {
+                    "Detail": {
+                      "taskToken": "{% $states.context.Task.Token %}",
+                      "payload": {
+                        "fastqIdList": "{% $states.input.fastqIdList %}",
+                        "outputUriPrefix": "{% $engineParameters.cacheUri %}"
+                      }
+                    },
+                    "DetailType": "${__decompress_ora_files_sync_detail_type__}",
+                    "EventBusName": "${__event_bus_name__}",
+                    "Source": "${__stack_source__}"
+                  }
+                ]
+              },
+              "Output": {
+                "decompressedFileList": "{% $states.result.decompressedFileList %}"
+              },
+              "Next": "Convert fastq list rows to cache uri"
+            },
+            "Convert fastq list rows to cache uri": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Arguments": {
+                "FunctionName": "${__convert_fastq_list_rows_object_to_cache_uri_lambda_function_arn__}",
+                "Payload": {
+                  "decompressedFileList": "{% $states.input.decompressedFileList %}",
+                  "fastqListRows": "{% $inputs.fastqListRows %}"
+                }
+              },
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException",
+                    "Lambda.TooManyRequestsException"
+                  ],
+                  "IntervalSeconds": 1,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2,
+                  "JitterStrategy": "FULL"
+                }
+              ],
+              "Output": {
+                "fastqListRows": "{% $states.result.Payload.fastqListRows %}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Pass",
+          "States": {
+            "Pass": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        }
+      ],
+      "Output": {
+        "fastqListRows": "{% $states.result[0].fastqListRows %}"
+      }
+    },
+    "Convert ready event data inputs to icav2 wes event inputs": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Arguments": {
+        "FunctionName": "${__convert_ready_event_inputs_to_icav2_wes_event_inputs_lambda_function_arn__}",
+        "Payload": {
+          "inputs": "{% /* Merge in new fastq list rows */ $merge([ $inputs, $states.input ]) %}"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Output": {
+        "inputs": "{% $states.result.Payload.inputs %}"
+      },
+      "Next": "Put ICAv2 WES Event"
+    },
+    "Put ICAv2 WES Event": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::events:putEvents",
+      "Arguments": {
+        "Entries": [
+          {
+            "Detail": "{% $readyEventDetail ~> | payload.data.inputs | $inputs | %}",
+            "DetailType": "${__icav2_wes_event_detail_type__}",
+            "EventBusName": "${__event_bus_name__}",
+            "Source": "${__stack_source__}"
+          }
+        ]
+      },
+      "End": true
+    }
+  },
+  "QueryLanguage": "JSONata"
+}
