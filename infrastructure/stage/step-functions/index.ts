@@ -13,6 +13,7 @@ import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
 import path from 'path';
 import {
   EVENT_SOURCE,
+  FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE,
   ICAV2_WES_REQUEST_DETAIL_TYPE,
   READY_STATUS,
   STACK_PREFIX,
@@ -45,9 +46,12 @@ function createStateMachineDefinitionSubstitutions(props: BuildStepFunctionProps
     definitionSubstitutions['__event_bus_name__'] = props.eventBus.eventBusName;
     definitionSubstitutions['__workflow_run_state_change_event_detail_type__'] =
       WORKFLOW_RUN_STATE_CHANGE_DETAIL_TYPE;
-    definitionSubstitutions['__icav2_wes_request_detail_type__'] = ICAV2_WES_REQUEST_DETAIL_TYPE;
+    definitionSubstitutions['__icav2_wes_request_event_detail_type__'] =
+      ICAV2_WES_REQUEST_DETAIL_TYPE;
     definitionSubstitutions['__stack_source__'] = EVENT_SOURCE;
     definitionSubstitutions['__ready_event_status__'] = READY_STATUS;
+    definitionSubstitutions['__decompress_ora_files_sync_detail_type__'] =
+      FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE;
     definitionSubstitutions['__new_workflow_manager_is_deployed__'] =
       props.isNewWorkflowManagerDeployed.toString();
   }

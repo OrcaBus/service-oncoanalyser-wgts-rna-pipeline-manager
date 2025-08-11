@@ -116,7 +116,8 @@
           "examples": [["GGACTTGG+CGTCTGCG.2.241024_A00130_0336_BHW7MVDSXC"]]
         }
       },
-      "required": ["libraryId", "subjectId", "individualId", "fastqRgidList"]
+      "required": ["libraryId", "subjectId", "individualId", "fastqRgidList"],
+      "allowAdditionalProperties": true
     },
     "inputs": {
       "type": "object",
