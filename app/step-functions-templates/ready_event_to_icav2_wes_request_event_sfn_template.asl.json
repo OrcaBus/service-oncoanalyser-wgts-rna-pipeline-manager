@@ -149,7 +149,7 @@
       "Arguments": {
         "Entries": [
           {
-            "Detail": "{% {\n  'name' $readyEventDetail.workflowRunName,\n  'inputs': $inputs,\n  'engineParameters': $readyEventDetail.payload.data.engineParameters,\n  'tags': (\n    [\n      $readyEventDetail.payload.data.tags,\n      { \n        'portalRunId': $readyEventDetail.portalRunId,\n      }\n    ] ~> $merge\n  )\n} %}",
+            "Detail": "{% {\n  'name': $readyEventDetail.workflowRunName,\n  'inputs': $inputs,\n  'engineParameters': $readyEventDetail.payload.data.engineParameters,\n  'tags': (\n    [\n      $readyEventDetail.payload.data.tags,\n      { \n        'portalRunId': $readyEventDetail.portalRunId,\n      }\n    ] ~> $merge\n  )\n} %}",
             "DetailType": "${__icav2_wes_request_event_detail_type__}",
             "EventBusName": "${__event_bus_name__}",
             "Source": "${__stack_source__}"
