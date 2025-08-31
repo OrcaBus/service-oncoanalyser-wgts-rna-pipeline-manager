@@ -52,9 +52,9 @@ def handler(event, context):
             gzip_file_uri = decompressed_file_uri_by_ingest_id.get("gzipFileUri")
             # Either ingest id for r1 or r2
             if ingest_id == fastq_obj['readSet']['r1']['ingestId']:
-                fastq_list_row["r1GzipFileUri"] = gzip_file_uri
+                fastq_list_row["read1FileUri"] = gzip_file_uri
             elif ingest_id == fastq_obj['readSet']['r2']['ingestId']:
-                fastq_list_row["r2GzipFileUri"] = gzip_file_uri
+                fastq_list_row["read2FileUri"] = gzip_file_uri
             else:
                 # Not sure how we got here
                 raise ValueError(f"Unexpected ingestId {ingest_id} for fastqId {fastq_id}")
