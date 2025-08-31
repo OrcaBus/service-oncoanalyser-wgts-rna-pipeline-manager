@@ -138,7 +138,7 @@
           "JitterStrategy": "FULL"
         }
       ],
-      "Output": {
+      "Assign": {
         "inputs": "{% $states.result.Payload.inputs %}"
       },
       "Next": "Put ICAv2 WES Event"
