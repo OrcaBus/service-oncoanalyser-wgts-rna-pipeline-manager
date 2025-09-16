@@ -7,12 +7,20 @@ import { LambdaName, LambdaObject } from '../lambda/interfaces';
  * Step Function Interfaces
  */
 export type StateMachineName =
+  // Draft-to-Draft-Complete
+  | 'populateDraftData'
+  // Draft-to-Ready
+  | 'validateDraftDataAndPutReadyEvent'
   // Ready-to-Submitted
   | 'readyEventToIcav2WesRequestEvent'
   // Post-submission event conversion
   | 'icav2WesAscEventToWorkflowRscEvent';
 
 export const stateMachineNameList: StateMachineName[] = [
+  // // Draft-to-Draft-Complete
+  // 'populateDraftData',
+  // // Draft-to-Ready
+  // 'validateDraftDataAndPutReadyEvent',
   // Ready-to-Submitted
   'readyEventToIcav2WesRequestEvent',
   // Post-submission event conversion
@@ -23,6 +31,9 @@ export const stateMachineNameList: StateMachineName[] = [
 export interface StepFunctionRequirements {
   // Event stuff
   needsEventPutPermission?: boolean;
+
+  // SSM Stuff
+  needsSsmParameterStoreAccess?: boolean;
 }
 
 export interface StepFunctionInput {
@@ -44,6 +55,13 @@ export type WireUpPermissionsProps = BuildStepFunctionProps & StepFunctionObject
 export type BuildStepFunctionsProps = Omit<BuildStepFunctionProps, 'stateMachineName'>;
 
 export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunctionRequirements> = {
+  populateDraftData: {
+    needsEventPutPermission: true,
+    needsSsmParameterStoreAccess: true,
+  },
+  validateDraftDataAndPutReadyEvent: {
+    needsEventPutPermission: true,
+  },
   readyEventToIcav2WesRequestEvent: {
     needsEventPutPermission: true,
   },
@@ -53,6 +71,17 @@ export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunction
 };
 
 export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = {
+  populateDraftData: [
+    'getLibraries',
+    'getMetadataTags',
+    'getFastqRgidsFromLibraryId',
+    'getFastqIdListFromRgidList',
+    'getFastqListRowsFromRgidList',
+    'getQcSummaryStatsFromRgidList',
+    'checkNtsmInternal',
+    'validateDraftCompleteSchema',
+  ],
+  validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema'],
   readyEventToIcav2WesRequestEvent: [
     'convertFastqListRowsObjectToCacheUri',
     'getFastqIdListFromFastqRgidList',
