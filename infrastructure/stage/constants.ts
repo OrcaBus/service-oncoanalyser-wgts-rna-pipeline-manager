@@ -2,6 +2,7 @@
 import path from 'path';
 import { StageName } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
 import { Genome, NotInBuiltInHmfReferenceGenomesType, WorkflowVersionType } from './interfaces';
+import { DATA_SCHEMA_REGISTRY_NAME } from '@orcabus/platform-cdk-constructs/shared-config/event-bridge';
 
 export const APP_ROOT = path.join(__dirname, '../../app');
 export const LAMBDA_DIR = path.join(APP_ROOT, 'lambdas');
@@ -149,8 +150,7 @@ export const ICAV2_WES_EVENT_SOURCE = 'orcabus.icav2wesmanager';
 export const READY_STATUS = 'READY';
 
 /* Schema constants */
-// Yet to implement draft events into this service
-export const SCHEMA_REGISTRY_NAME = EVENT_SOURCE;
+export const SCHEMA_REGISTRY_NAME = DATA_SCHEMA_REGISTRY_NAME;
 export const SSM_SCHEMA_ROOT = path.join(SSM_PARAMETER_PATH_PREFIX, 'schemas');
 
 /* Future proofing */
