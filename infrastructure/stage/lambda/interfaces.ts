@@ -1,6 +1,16 @@
 import { PythonUvFunction } from '@orcabus/platform-cdk-constructs/lambda';
 
 export type LambdaName =
+  // Populate Draft lambdas
+  | 'getLibraries'
+  | 'getMetadataTags'
+  | 'getFastqRgidsFromLibraryId'
+  | 'getFastqIdListFromRgidList'
+  | 'getFastqListRowsFromRgidList'
+  | 'getQcSummaryStatsFromRgidList'
+  | 'checkNtsmInternal'
+  // Validate draft lambdas
+  | 'validateDraftCompleteSchema'
   // Ready to ICAv2 WES lambdas
   | 'convertFastqListRowsObjectToCacheUri'
   | 'getFastqIdListFromFastqRgidList'
@@ -9,6 +19,16 @@ export type LambdaName =
   | 'convertIcav2WesEventToWrscEvent';
 
 export const lambdaNameList: LambdaName[] = [
+  // Populate Draft lambdas
+  'getLibraries',
+  'getMetadataTags',
+  'getFastqRgidsFromLibraryId',
+  'getFastqIdListFromRgidList',
+  'getFastqListRowsFromRgidList',
+  'getQcSummaryStatsFromRgidList',
+  'checkNtsmInternal',
+  // Validate draft lambdas
+  'validateDraftCompleteSchema',
   // Ready to ICAv2 WES lambdas
   'convertFastqListRowsObjectToCacheUri',
   'getFastqIdListFromFastqRgidList',
@@ -20,10 +40,39 @@ export const lambdaNameList: LambdaName[] = [
 // Requirements interface for Lambda functions
 export interface LambdaRequirements {
   needsOrcabusApiTools?: boolean;
+  needsSsmParametersAccess?: boolean;
+  needsSchemaRegistryAccess?: boolean;
 }
 
 // Lambda requirements mapping
 export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
+  // Populate Draft data
+  getLibraries: {
+    needsOrcabusApiTools: true,
+  },
+  getMetadataTags: {
+    needsOrcabusApiTools: true,
+  },
+  getFastqRgidsFromLibraryId: {
+    needsOrcabusApiTools: true,
+  },
+  getFastqIdListFromRgidList: {
+    needsOrcabusApiTools: true,
+  },
+  getFastqListRowsFromRgidList: {
+    needsOrcabusApiTools: true,
+  },
+  getQcSummaryStatsFromRgidList: {
+    needsOrcabusApiTools: true,
+  },
+  checkNtsmInternal: {
+    needsOrcabusApiTools: true,
+  },
+  // Validate Draft data
+  validateDraftCompleteSchema: {
+    needsSsmParametersAccess: true,
+    needsSchemaRegistryAccess: true,
+  },
   // Convert ready to ICAv2 WES Event - no requirements
   convertFastqListRowsObjectToCacheUri: {
     needsOrcabusApiTools: true,
