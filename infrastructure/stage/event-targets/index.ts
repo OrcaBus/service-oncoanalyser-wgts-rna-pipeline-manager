@@ -8,7 +8,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import { EventField } from 'aws-cdk-lib/aws-events';
 
 export function buildWrscLegacyToSfnTarget(props: AddSfnAsEventBridgeTargetProps) {
-  // We take in the event detail from the oncoanalyser-wgts-rna ready event
+  // We take in the event detail from the oncoanalyser-wgts-dna-rna ready event
   // And return the entire detail to the state machine
   props.eventBridgeRuleObj.addTarget(
     new eventsTargets.SfnStateMachine(props.stateMachineObj, {
@@ -29,7 +29,7 @@ export function buildWrscLegacyToSfnTarget(props: AddSfnAsEventBridgeTargetProps
 }
 
 export function buildWrscToSfnTarget(props: AddSfnAsEventBridgeTargetProps) {
-  // We take in the event detail from the oncoanalyser wgts rna ready event
+  // We take in the event detail from the oncoanalyser wgts dna+rna ready event
   // And return the entire detail to the state machine
   props.eventBridgeRuleObj.addTarget(
     new eventsTargets.SfnStateMachine(props.stateMachineObj, {
@@ -52,6 +52,53 @@ export function buildIcav2WesEventStateChangeToWrscSfnTarget(
 export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
   for (const eventBridgeTargetsName of eventBridgeTargetsNameList) {
     switch (eventBridgeTargetsName) {
+      // Draft Legacy to Populate Draft Data
+      case 'draftLegacyToPopulateDraftDataSfnTarget': {
+        buildWrscLegacyToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
+          eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
+            (eventBridgeObject) => eventBridgeObject.ruleName === 'wrscDraftLegacy'
+          )?.ruleObject,
+          stateMachineObj: props.stepFunctionObjects.find(
+            (sfnObject) => sfnObject.stateMachineName === 'populateDraftData'
+          )?.sfnObject,
+        });
+        break;
+      }
+      case 'draftToPopulateDraftDataSfnTarget': {
+        buildWrscToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
+          eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
+            (eventBridgeObject) => eventBridgeObject.ruleName === 'wrscDraft'
+          )?.ruleObject,
+          stateMachineObj: props.stepFunctionObjects.find(
+            (sfnObject) => sfnObject.stateMachineName === 'populateDraftData'
+          )?.sfnObject,
+        });
+        break;
+      }
+      // Validate draft data
+      case 'draftLegacyToValidateDraftSfnTarget': {
+        buildWrscLegacyToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
+          eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
+            (eventBridgeObject) => eventBridgeObject.ruleName === 'wrscDraftLegacy'
+          )?.ruleObject,
+          stateMachineObj: props.stepFunctionObjects.find(
+            (sfnObject) => sfnObject.stateMachineName === 'validateDraftDataAndPutReadyEvent'
+          )?.sfnObject,
+        });
+        break;
+      }
+      case 'draftToValidateDraftSfnTarget': {
+        buildWrscToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
+          eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
+            (eventBridgeObject) => eventBridgeObject.ruleName === 'wrscDraft'
+          )?.ruleObject,
+          stateMachineObj: props.stepFunctionObjects.find(
+            (sfnObject) => sfnObject.stateMachineName === 'validateDraftDataAndPutReadyEvent'
+          )?.sfnObject,
+        });
+        break;
+      }
+      // Ready to Icav2 Wes Submitted
       case 'readyLegacyToIcav2WesSubmittedSfnTarget': {
         buildWrscLegacyToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
           eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
@@ -74,6 +121,7 @@ export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
         });
         break;
       }
+      // Post submitted
       case 'icav2WesAnalysisStateChangeEventToWrscSfnTarget': {
         buildIcav2WesEventStateChangeToWrscSfnTarget(<AddSfnAsEventBridgeTargetProps>{
           eventBridgeRuleObj: props.eventBridgeRuleObjects.find(

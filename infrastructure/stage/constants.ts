@@ -11,8 +11,8 @@ export const EVENT_SCHEMAS_DIR = path.join(APP_ROOT, 'event-schemas');
 
 /* Workflow constants */
 export const WORKFLOW_NAME = 'oncoanalyser-wgts-rna';
+export const DRAFT_STATUS = 'DRAFT';
 
-// Yet to implement draft events into this service
 // However, because this workflow has the same workflow name as the
 // existing production workflow, we need to filter on the payload version
 // to prevent the wrong service from being triggered
