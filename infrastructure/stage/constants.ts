@@ -2,6 +2,7 @@
 import path from 'path';
 import { StageName } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
 import { Genome, NotInBuiltInHmfReferenceGenomesType, WorkflowVersionType } from './interfaces';
+import { DATA_SCHEMA_REGISTRY_NAME } from '@orcabus/platform-cdk-constructs/shared-config/event-bridge';
 
 export const APP_ROOT = path.join(__dirname, '../../app');
 export const LAMBDA_DIR = path.join(APP_ROOT, 'lambdas');
