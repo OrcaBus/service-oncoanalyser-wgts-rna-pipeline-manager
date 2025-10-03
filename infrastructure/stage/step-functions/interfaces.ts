@@ -18,9 +18,9 @@ export type StateMachineName =
 
 export const stateMachineNameList: StateMachineName[] = [
   // // Draft-to-Draft-Complete
-  // 'populateDraftData',
+  'populateDraftData',
   // // Draft-to-Ready
-  // 'validateDraftDataAndPutReadyEvent',
+  'validateDraftDataAndPutReadyEvent',
   // Ready-to-Submitted
   'readyEventToIcav2WesRequestEvent',
   // Post-submission event conversion
