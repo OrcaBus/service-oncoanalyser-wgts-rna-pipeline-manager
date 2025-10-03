@@ -31,7 +31,7 @@ export interface StatelessApplicationStackConfig {
 }
 
 /* Set versions */
-export type WorkflowVersionType = '2.0.0' | '2.1.0';
+export type WorkflowVersionType = '2.0.0' | '2.1.0' | '2.2.0';
 
 /* Set genomes */
 export type GenomeType = 'GRCh38_umccr' | 'GRCh38_hmf';
@@ -43,7 +43,7 @@ export interface Genome {
   fai: string;
   dict: string;
   img: string;
-  bwamem2_index: string;
-  gridss_index: string;
-  star_index: string;
+  bwamem2Index: string;
+  gridssIndex: string;
+  starIndex: string;
 }
