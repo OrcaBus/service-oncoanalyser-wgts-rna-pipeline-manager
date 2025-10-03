@@ -82,7 +82,7 @@ export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
             (eventBridgeObject) => eventBridgeObject.ruleName === 'wrscDraftLegacy'
           )?.ruleObject,
           stateMachineObj: props.stepFunctionObjects.find(
-            (sfnObject) => sfnObject.stateMachineName === 'populateDraftData'
+            (sfnObject) => sfnObject.stateMachineName === 'validateDraftDataAndPutReadyEvent'
           )?.sfnObject,
         });
         break;
