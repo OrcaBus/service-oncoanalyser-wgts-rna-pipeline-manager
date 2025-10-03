@@ -75,15 +75,14 @@ export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
         });
         break;
       }
-
       // Validate draft data
       case 'draftLegacyToValidateDraftSfnTarget': {
-        buildWrscToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
+        buildWrscLegacyToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
           eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
             (eventBridgeObject) => eventBridgeObject.ruleName === 'wrscDraftLegacy'
           )?.ruleObject,
           stateMachineObj: props.stepFunctionObjects.find(
-            (sfnObject) => sfnObject.stateMachineName === 'validateDraftDataAndPutReadyEvent'
+            (sfnObject) => sfnObject.stateMachineName === 'populateDraftData'
           )?.sfnObject,
         });
         break;
@@ -99,7 +98,6 @@ export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
         });
         break;
       }
-
       // Ready to Icav2 Wes Submitted
       case 'readyLegacyToIcav2WesSubmittedSfnTarget': {
         buildWrscLegacyToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
@@ -123,7 +121,6 @@ export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
         });
         break;
       }
-
       // Post submitted
       case 'icav2WesAnalysisStateChangeEventToWrscSfnTarget': {
         buildIcav2WesEventStateChangeToWrscSfnTarget(<AddSfnAsEventBridgeTargetProps>{
