@@ -139,8 +139,7 @@ export const ICAV2_WES_EVENT_SOURCE = 'orcabus.icav2wesmanager';
 export const READY_STATUS = 'READY';
 
 /* Schema constants */
-// Yet to implement draft events into this service
-export const SCHEMA_REGISTRY_NAME = EVENT_SOURCE;
+export const SCHEMA_REGISTRY_NAME = DATA_SCHEMA_REGISTRY_NAME;
 export const SSM_SCHEMA_ROOT = path.join(SSM_PARAMETER_PATH_PREFIX, 'schemas');
 
 /* Future proofing */
