@@ -241,7 +241,8 @@
               "Type": "Choice",
               "Choices": [
                 {
-                  "Next": "Use provided cache uri"
+                  "Next": "Use provided cache uri",
+                  "Condition": "{% $draftEngineParameters.cacheUri ? true : false %}"
                 }
               ],
               "Default": "Get default cache uri prefix"
