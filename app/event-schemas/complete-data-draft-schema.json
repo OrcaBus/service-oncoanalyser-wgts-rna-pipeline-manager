@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2012-12/schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
     "s3Uri": {
       "type": "string",
@@ -162,15 +162,15 @@
           "type": "string",
           "examples": ["GRCh38_umccr"]
         },
-        "genome_version": {
+        "genomeVersion": {
           "type": "string",
           "examples": ["38"]
         },
-        "genome_type": {
+        "genomeType": {
           "type": "string",
           "examples": ["alt"]
         },
-        "force_genome": {
+        "forceGenome": {
           "type": "boolean",
           "examples": [true]
         },

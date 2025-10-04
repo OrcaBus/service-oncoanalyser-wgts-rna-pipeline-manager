@@ -19,7 +19,7 @@ export const DRAFT_STATUS = 'DRAFT';
 export const DEFAULT_WORKFLOW_VERSION: WorkflowVersionType = '2.1.0';
 export const DEFAULT_PAYLOAD_VERSION = '2025.08.05';
 
-// Yet to implement draft events into this service
+// S3 placeholders
 export const WORKFLOW_LOGS_PREFIX = `s3://{__CACHE_BUCKET__}/{__CACHE_PREFIX__}logs/${WORKFLOW_NAME}/`;
 export const WORKFLOW_OUTPUT_PREFIX = `s3://{__CACHE_BUCKET__}/{__CACHE_PREFIX__}analysis/${WORKFLOW_NAME}/`;
 export const WORKFLOW_CACHE_PREFIX = `s3://{__CACHE_BUCKET__}/{__CACHE_PREFIX__}cache/${WORKFLOW_NAME}/`;
@@ -68,23 +68,23 @@ export const DEFAULT_WORKFLOW_INPUTS_BY_VERSION_MAP: Record<WorkflowVersionType,
   '2.0.0': {
     mode: 'wgts',
     genome: 'GRCh38_umccr',
-    genome_version: '38',
-    genome_type: 'alt',
-    force_genome: true,
+    genomeVersion: '38',
+    genomeType: 'alt',
+    forceGenome: true,
   },
   '2.1.0': {
     mode: 'wgts',
     genome: 'GRCh38_umccr',
-    genome_version: '38',
-    genome_type: 'alt',
-    force_genome: true,
+    genomeVersion: '38',
+    genomeType: 'alt',
+    forceGenome: true,
   },
   '2.2.0': {
     mode: 'wgts',
     genome: 'GRCh38_umccr',
-    genome_version: '38',
-    genome_type: 'alt',
-    force_genome: true,
+    genomeVersion: '38',
+    genomeType: 'alt',
+    forceGenome: true,
   },
 };
 
@@ -134,6 +134,7 @@ export const SSM_PARAMETER_PATH_PREFIX_GENOMES = path.join(SSM_PARAMETER_PATH_PR
 export const EVENT_BUS_NAME = 'OrcaBusMain';
 export const EVENT_SOURCE = 'orcabus.oncoanalyserwgtsrna';
 export const WORKFLOW_RUN_STATE_CHANGE_DETAIL_TYPE = 'WorkflowRunStateChange';
+export const WORKFLOW_RUN_UPDATE_DETAIL_TYPE = 'WorkflowRunUpdate';
 export const ICAV2_WES_REQUEST_DETAIL_TYPE = 'Icav2WesRequest';
 export const ICAV2_WES_STATE_CHANGE_DETAIL_TYPE = 'Icav2WesAnalysisStateChange';
 export const FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE = 'OraDecompressionRequestSync';
@@ -141,8 +142,7 @@ export const FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE = 'OraDecompressionRequestS
 export const WORKFLOW_MANAGER_EVENT_SOURCE = 'orcabus.workflowmanager';
 export const ICAV2_WES_EVENT_SOURCE = 'orcabus.icav2wesmanager';
 
-// Yet to implement draft events into this service
-// export const FASTQ_SYNC_DETAIL_TYPE = 'FastqSync';
+export const FASTQ_SYNC_DETAIL_TYPE = 'FastqSync';
 
 /* Event rule constants */
 // Yet to implement draft events into this service
