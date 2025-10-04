@@ -2,6 +2,7 @@ import { IEventBus } from 'aws-cdk-lib/aws-events';
 import { StateMachine } from 'aws-cdk-lib/aws-stepfunctions';
 
 import { LambdaName, LambdaObject } from '../lambda/interfaces';
+import { SsmParameterPaths } from '../ssm/interfaces';
 
 /**
  * Step Function Interfaces
@@ -44,6 +45,7 @@ export interface BuildStepFunctionProps extends StepFunctionInput {
   lambdaObjects: LambdaObject[];
   eventBus: IEventBus;
   isNewWorkflowManagerDeployed: boolean;
+  ssmParameterPaths: SsmParameterPaths;
 }
 
 export interface StepFunctionObject extends StepFunctionInput {

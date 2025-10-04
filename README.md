@@ -186,7 +186,7 @@ DETAIL_TYPE="WorkflowRunUpdate"
 SOURCE="orcabus.manual"
 
 WORKFLOW_NAME="oncoanalyser-wgts-rna"
-WORKFLOW_VERSION="2.1.0"
+WORKFLOW_VERSION="2.2.0"
 EXECUTION_ENGINE="ICA"
 
 PAYLOAD_VERSION="2025.08.05"
@@ -271,32 +271,35 @@ get_workflow(){
   local workflow_version="$2"
   local execution_engine="$3"
   local execution_engine_pipeline_id="$4"
-
-  # Ignore this for now, return a default workflow object
-  jq --null-input --raw-output --compact-output \
+  local code_version="$5"
+  curl --silent --fail --show-error --location \
+    --request GET \
+    --get \
+    --header "Authorization: Bearer $(get_orcabus_token)" \
+    --url "https://workflow.$(get_hostname_from_ssm)/api/v1/workflow" \
+    --data "$( \
+      jq \
+       --null-input --compact-output --raw-output \
+       --arg workflowName "$workflow_name" \
+       --arg workflowVersion "$workflow_version" \
+       --arg codeVersion "$code_version" \
+       '
+         {
+            "name": $workflowName,
+            "version": $workflowVersion,
+            "codeVersion": $codeVersion
+         } |
+         to_entries |
+         map(
+           "\(.key)=\(.value)"
+         ) |
+         join("&")
+       ' \
+    )" | \
+  jq --compact-output --raw-output \
     '
-      {
-        "orcabusId": "wfl.01K3QDJECAKYXZ6XRHQVW2MG2X",
-        "name": "oncoanalyser-wgts-rna",
-        "version": "2.1.0",
-        "executionEngine": "ICA",
-      }
+      .results[0]
     '
-
-  #  curl --silent --fail --show-error --location \
-  #    --header "Authorization: Bearer $(get_orcabus_token)" \
-  #    --url "https://workflow.$(get_hostname_from_ssm)/api/v1/workflow?workflowName=${workflow_name}&workflowVersion=${workflow_version}&executionEngine=${execution_engine}&executionEnginePipelineId=${execution_engine_pipeline_id}" | \
-  #  jq --compact-output --raw-output \
-  #    '
-  #      .results[0] |
-  #      with_entries(
-  #        if (.key | startswith("workflow")) then
-  #          .key |= (sub("workflow"; "") | ascii_downcase)
-  #        else
-  #          .
-  #        end
-  #      )
-  #    '
 }
 
 # Generate the event

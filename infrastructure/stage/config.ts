@@ -100,5 +100,6 @@ export const getStatelessStackProps = (stage: StageName): StatelessApplicationSt
     // Event bus object
     eventBusName: EVENT_BUS_NAME,
     isNewWorkflowManagerDeployed: NEW_WORKFLOW_MANAGER_IS_DEPLOYED[stage],
+    ssmParameterPaths: getSsmParameterPaths(),
   };
 };

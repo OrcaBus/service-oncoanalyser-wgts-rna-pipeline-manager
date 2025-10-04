@@ -59,9 +59,9 @@
       "Type": "Choice",
       "Choices": [
         {
+          "Comment": "All libraries in tags",
           "Next": "Get Engine parameters",
-          "Condition": "{% /* https://try.jsonata.org/XDJvywd0c */\n/* Compare the draft tags to the libraries */\n/* Get the draft tags */\n(\n    [ \n        $draftTags.(libraryId),\n        $draftTags.(tumorLibraryId)\n    ] ~> $sort\n)\n=\n/* Get the draft detail libraries */ \n(\n    [\n        $draftLibrariesList.(libraryId)\n    ] ~> $sort \n) %}",
-          "Comment": "All libraries in tags"
+          "Condition": "{% /* https://try.jsonata.org/XDJvywd0c */\n/* Compare the draft tags to the libraries */\n/* Get the draft tags */\n(\n    [ \n        $draftTags.(libraryId)\n    ] ~> $sort\n)\n=\n/* Get the draft detail libraries */ \n(\n    [\n        $draftLibrariesList.(libraryId)\n    ] ~> $sort \n) %}"
         }
       ],
       "Default": "Get primitive tags from linked libraries"
@@ -442,7 +442,7 @@
               "Choices": [
                 {
                   "Next": "Keep Original sequence data",
-                  "Condition": "{% $draftInputs.sequenceData ? true : false %}"
+                  "Condition": "{% $draftInputs.fastqListRows ? true : false %}"
                 }
               ],
               "Default": "Get fastq ids from rgid list"
@@ -450,7 +450,7 @@
             "Keep Original sequence data": {
               "Type": "Pass",
               "End": true,
-              "Output": "{% $draftInputs.sequenceData %}"
+              "Output": "{% $draftInputs.fastqListRows %}"
             },
             "Get fastq ids from rgid list": {
               "Type": "Task",
@@ -553,7 +553,7 @@
       ],
       "Next": "Add reference data",
       "Assign": {
-        "inputs": "{% /* https://try.jsonata.org/ZAkTIin-h */\n[\n  /* Get the default input params */\n  $states.result[2],\n  /* Start with the draft inputs */\n  $draftInputs,\n  /* Combine the states results */\n  {\n      \"sequenceData\": $states.result[0],\n      \"tumorSequenceData\": $states.result[1]\n  },\n  /* Add in the required sampleName and tumorSampleName */\n  /* These must match the value of the library id */\n  {\n    \"sampleName\": $draftTags.libraryId,\n    \"tumorSampleName\": $draftTags.tumorLibraryId ? $draftTags.tumorLibraryId : null\n  }\n]\n/* Combine old and new */\n~> $merge\n/* Sift out inputs with null values */\n~> $sift(function($v, $k){ $v != null }) %}"
+        "inputs": "{% /* https://try.jsonata.org/ZAkTIin-h */\n[\n  /* Get the default input params */\n  $states.result[1],\n  /* Start with the draft inputs */\n  $draftInputs,\n  /* Combine the states results */\n  {\n      \"fastqListRows\": $states.result[0].fastqListRows\n  },\n  /* Add in the required sampleName */\n  /* These must match the value of the library id */\n  {\n    \"sampleName\": $draftTags.libraryId\n  },\n  /* We also add in the groupId and subjectId if theyre not already in */\n  {\n    \"groupId\": (\n        $draftInputs.groupId ? $draftInputs.groupId : $draftTags.libraryId\n    ),\n    \"subjectId\": (\n        $draftInputs.subjectId ? $draftInputs.subjectId : $draftTags.libraryId\n    ),\n    \"sampleId\": (\n        $draftInputs.sampleId ? $draftInputs.sampleId : $draftTags.libraryId\n    )\n  }\n]\n/* Combine old and new */\n~> $merge\n/* Sift out inputs with null values */\n~> $sift(function($v, $k){ $v != null }) %}"
       }
     },
     "Add reference data": {
@@ -568,7 +568,7 @@
               "Choices": [
                 {
                   "Next": "Use provided reference",
-                  "Condition": "{% $draftInputs.reference ? true : false %}"
+                  "Condition": "{% $inputs.refDataHmfDataPath ? true : false %}"
                 }
               ],
               "Default": "Get reference"
@@ -577,26 +577,47 @@
               "Type": "Pass",
               "End": true,
               "Output": {
-                "reference": "{% $draftInputs.reference %}"
+                "refDataHmfDataPath": "{% $inputs.refDataHmfDataPath %}"
               }
             },
             "Get reference": {
               "Type": "Task",
               "Arguments": {
-                "Name": "{% '${__default_reference_ssm_parameter_prefix__}/' & $draftDetail.workflow.version %}"
+                "Name": "{% '${__default_hmf_reference_data_path_ssm_parameter_prefix__}/' & $draftDetail.workflow.version %}"
               },
               "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "End": true,
               "Output": {
-                "reference": "{% $parse($states.result.Parameter.Value) %}"
+                "refDataHmfDataPath": "{% $parse($states.result.Parameter.Value) %}"
               }
             }
           }
         },
         {
-          "StartAt": "Pass (reference data)",
+          "StartAt": "Using non-hmf reference genome",
           "States": {
-            "Pass (reference data)": {
+            "Using non-hmf reference genome": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Next": "Get genome parameter",
+                  "Condition": "{% ( ( $inputs.genome ~> $match(/_hmf$/) ) ? true : false ) ~> $not %}"
+                }
+              ],
+              "Default": "Refdata placeholder"
+            },
+            "Get genome parameter": {
+              "Type": "Task",
+              "Arguments": {
+                "Name": "{% '${__default_genome_ssm_parameter_prefix__}/' & $inputs.genome %}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
+              "End": true,
+              "Output": {
+                "genomes": "{% {\n  $inputs.genome: $parse($states.result.Parameter.Value)\n} %}"
+              }
+            },
+            "Refdata placeholder": {
               "Type": "Pass",
               "End": true,
               "Output": {}
@@ -703,7 +724,7 @@
       "Arguments": {
         "Entries": [
           {
-            "Detail": "{% $merge([\n  $draftDetail,\n  {\n    \"id\": null,\n    \"status\": \"${__draft_event_status__}\",\n    \"timestamp\": $states.context.State.EnteredTime,\n    \"libraries\": $libraries,\n    \"payload\": (\n      $merge([\n        $draftPayload,\n        {\n          \"refId\": null,\n          \"data\": {\n            \"inputs\": $inputs,\n            \"engineParameters\": $engineParameters,\n            \"tags\": $tags\n          }\n        }\n      ])\n      /* Remove null inputs like refId */\n      ~> $sift(function($v, $k){$v != null})\n    )\n  }\n])\n/* Remove null inputs like id */\n~> $sift(function($v, $k){$v != null}) %}",
+            "Detail": "{% $merge([\n  $draftDetail,\n  {\n    \"id\": null,\n    \"status\": \"${__draft_event_status__}\",\n    \"timestamp\": $states.context.State.EnteredTime,\n    \"libraries\": [ $libraries ],\n    \"payload\": (\n      $merge([\n        $draftPayload,\n        {\n          \"refId\": null,\n          \"data\": {\n            \"inputs\": $inputs,\n            \"engineParameters\": $engineParameters,\n            \"tags\": $tags\n          }\n        }\n      ])\n      /* Remove null inputs like refId */\n      ~> $sift(function($v, $k){$v != null})\n    )\n  }\n])\n/* Remove null inputs like id */\n~> $sift(function($v, $k){$v != null}) %}",
             "DetailType": "${__workflow_run_update_event_detail_type__}",
             "EventBusName": "${__event_bus_name__}",
             "Source": "${__stack_source__}"
@@ -718,7 +739,7 @@
       "Arguments": {
         "Entries": [
           {
-            "Detail": "{% /* https://try.jsonata.org/r0aCmiix- */\n$merge([\n  $draftDetail,\n  {\n    \"status\": \"${__draft_event_status__}\",\n    \"timestamp\": $states.context.State.EnteredTime,\n    \"libraries\": ($libraries ~> | $ | {}, [\"readsets\"] |),\n    \"payload\": (\n      $merge([\n        $draftPayload,\n        {\n          \"refId\": null,\n          \"data\": {\n            \"inputs\": $inputs,\n            \"engineParameters\": $engineParameters,\n            \"tags\": $tags\n          }\n        }\n      ])\n      /* Remove null inputs like refId */\n      ~> $sift(function($v, $k){$v != null})\n    )\n  }\n]) ~>\n/* Renamed libraries to linkedLibraries using the transform method */\n| $ | {\"linkedLibraries\": libraries}, [\"libraries\"] | ~>\n/* Renamed workflowName and workflowVersion using the transform method */\n| $ | {\"workflowName\": workflow.name, \"workflowVersion\": workflow.version}, [\"workflow\"] | %}",
+            "Detail": "{% /* https://try.jsonata.org/r0aCmiix- */\n$merge([\n  $draftDetail,\n  {\n    \"status\": \"${__draft_event_status__}\",\n    \"timestamp\": $states.context.State.EnteredTime,\n    \"libraries\": ( [ $libraries ] ~> | $ | {}, [\"readsets\"] |),\n    \"payload\": (\n      $merge([\n        $draftPayload,\n        {\n          \"refId\": null,\n          \"data\": {\n            \"inputs\": $inputs,\n            \"engineParameters\": $engineParameters,\n            \"tags\": $tags\n          }\n        }\n      ])\n      /* Remove null inputs like refId */\n      ~> $sift(function($v, $k){$v != null})\n    )\n  }\n]) ~>\n/* Renamed libraries to linkedLibraries using the transform method */\n| $ | {\"linkedLibraries\": libraries}, [\"libraries\"] | ~>\n/* Renamed workflowName and workflowVersion using the transform method */\n| $ | {\"workflowName\": workflow.name, \"workflowVersion\": workflow.version}, [\"workflow\"] | %}",
             "DetailType": "${__workflow_run_state_change_event_detail_type__}",
             "EventBusName": "${__event_bus_name__}",
             "Source": "${__stack_source__}"
