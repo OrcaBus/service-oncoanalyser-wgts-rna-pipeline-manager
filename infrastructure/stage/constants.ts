@@ -1,9 +1,9 @@
-/* Directory constants */
+/* Imports */
 import path from 'path';
-import { StageName } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
 import { Genome, NotInBuiltInHmfReferenceGenomesType, WorkflowVersionType } from './interfaces';
 import { DATA_SCHEMA_REGISTRY_NAME } from '@orcabus/platform-cdk-constructs/shared-config/event-bridge';
 
+/* Directory constants */
 export const APP_ROOT = path.join(__dirname, '../../app');
 export const LAMBDA_DIR = path.join(APP_ROOT, 'lambdas');
 export const STEP_FUNCTIONS_DIR = path.join(APP_ROOT, 'step-functions-templates');
@@ -11,6 +11,7 @@ export const EVENT_SCHEMAS_DIR = path.join(APP_ROOT, 'event-schemas');
 
 /* Workflow constants */
 export const WORKFLOW_NAME = 'oncoanalyser-wgts-rna';
+export const READY_STATUS = 'READY';
 export const DRAFT_STATUS = 'DRAFT';
 
 // However, because this workflow has the same workflow name as the
@@ -144,21 +145,9 @@ export const ICAV2_WES_EVENT_SOURCE = 'orcabus.icav2wesmanager';
 
 export const FASTQ_SYNC_DETAIL_TYPE = 'FastqSync';
 
-/* Event rule constants */
-// Yet to implement draft events into this service
-// export const DRAFT_STATUS = 'DRAFT';
-export const READY_STATUS = 'READY';
-
 /* Schema constants */
 export const SCHEMA_REGISTRY_NAME = DATA_SCHEMA_REGISTRY_NAME;
 export const SSM_SCHEMA_ROOT = path.join(SSM_PARAMETER_PATH_PREFIX, 'schemas');
-
-/* Future proofing */
-export const NEW_WORKFLOW_MANAGER_IS_DEPLOYED: Record<StageName, boolean> = {
-  BETA: true,
-  GAMMA: true,
-  PROD: true,
-};
 
 // Used to group event rules and step functions
 export const STACK_PREFIX = 'orca-onco-wgts-rna';

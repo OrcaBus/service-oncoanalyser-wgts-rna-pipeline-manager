@@ -631,7 +631,7 @@
     },
     "Add qc tags": {
       "Type": "Parallel",
-      "Next": "New Workflow Manager Deployed",
+      "Next": "Put DRAFT update event",
       "Branches": [
         {
           "StartAt": "Get coverage and dup-frac estimates",
@@ -707,17 +707,6 @@
         "tags": "{% /* https://try.jsonata.org/05K2l3beH */\n/* List to merge together */\n[\n    /* Start with the tags */\n    $tags,\n    /* Merge the results list together */\n    $merge($states.result)\n] \n/* Then merge these initial tags with states.result  */\n~> $merge\n/* Remove any keys with values */\n~> $sift(function($v, $k){$v != null}) %}"
       }
     },
-    "New Workflow Manager Deployed": {
-      "Type": "Choice",
-      "Choices": [
-        {
-          "Next": "Put DRAFT update event",
-          "Condition": "{% ${__new_workflow_manager_is_deployed__} %}",
-          "Comment": "New Workflow Manager is Deployed"
-        }
-      ],
-      "Default": "Push DRAFT Event (legacy)"
-    },
     "Put DRAFT update event": {
       "Type": "Task",
       "Resource": "arn:aws:states:::events:putEvents",
@@ -726,21 +715,6 @@
           {
             "Detail": "{% $merge([\n  $draftDetail,\n  {\n    \"id\": null,\n    \"status\": \"${__draft_event_status__}\",\n    \"timestamp\": $states.context.State.EnteredTime,\n    \"libraries\": [ $libraries ],\n    \"payload\": (\n      $merge([\n        $draftPayload,\n        {\n          \"refId\": null,\n          \"data\": {\n            \"inputs\": $inputs,\n            \"engineParameters\": $engineParameters,\n            \"tags\": $tags\n          }\n        }\n      ])\n      /* Remove null inputs like refId */\n      ~> $sift(function($v, $k){$v != null})\n    )\n  }\n])\n/* Remove null inputs like id */\n~> $sift(function($v, $k){$v != null}) %}",
             "DetailType": "${__workflow_run_update_event_detail_type__}",
-            "EventBusName": "${__event_bus_name__}",
-            "Source": "${__stack_source__}"
-          }
-        ]
-      },
-      "End": true
-    },
-    "Push DRAFT Event (legacy)": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::events:putEvents",
-      "Arguments": {
-        "Entries": [
-          {
-            "Detail": "{% /* https://try.jsonata.org/r0aCmiix- */\n$merge([\n  $draftDetail,\n  {\n    \"status\": \"${__draft_event_status__}\",\n    \"timestamp\": $states.context.State.EnteredTime,\n    \"libraries\": ( [ $libraries ] ~> | $ | {}, [\"readsets\"] |),\n    \"payload\": (\n      $merge([\n        $draftPayload,\n        {\n          \"refId\": null,\n          \"data\": {\n            \"inputs\": $inputs,\n            \"engineParameters\": $engineParameters,\n            \"tags\": $tags\n          }\n        }\n      ])\n      /* Remove null inputs like refId */\n      ~> $sift(function($v, $k){$v != null})\n    )\n  }\n]) ~>\n/* Renamed libraries to linkedLibraries using the transform method */\n| $ | {\"linkedLibraries\": libraries}, [\"libraries\"] | ~>\n/* Renamed workflowName and workflowVersion using the transform method */\n| $ | {\"workflowName\": workflow.name, \"workflowVersion\": workflow.version}, [\"workflow\"] | %}",
-            "DetailType": "${__workflow_run_state_change_event_detail_type__}",
             "EventBusName": "${__event_bus_name__}",
             "Source": "${__stack_source__}"
           }
