@@ -30,7 +30,7 @@ echo_stderr(){
 print_usage(){
   echo "
 generate-WRU-draft.sh [-h | --help]
-generate-WRU-draft.sh (library_id)...
+generate-WRU-draft.sh (library_id)
                       [-f | --force]
                       [-o | --output-uri-prefix <s3_uri>]
                       [-l | --logs-uri-prefix <s3_uri>]
