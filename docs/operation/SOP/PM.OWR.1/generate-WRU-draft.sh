@@ -20,7 +20,7 @@ CODE_VERSION="b94cbc7"
 PAYLOAD_VERSION="2025.08.05"
 
 # Library id array
-LIBRARY_ID_ARRAY=()
+LIBRARY_ID=""
 
 # Functions
 echo_stderr(){
@@ -40,7 +40,7 @@ Description:
 Run this script to generate a draft WorkflowRunUpdate event for the specified library IDs.
 
 Positional arguments:
-  library_id:   One or more library IDs to link to the WorkflowRunUpdate event.
+  library_id:   The library id to link to the WorkflowRunUpdate event.
 
 Keyword arguments:
   -h | --help:               Print this help message and exit.
@@ -54,8 +54,8 @@ Environment:
   AWS_REGION:   (Optional) The AWS region to use for AWS CLI commands.
 
 Example usage:
-bash generate-WRU-draft.sh tumor_library_id normal_library_id
-bash generate-WRU-draft.sh tumor_library_id normal_library_id \\
+bash generate-WRU-draft.sh library_id
+bash generate-WRU-draft.sh library_id \\
   --output-uri-prefix s3://project-bucket/analysis/dragen-wgts-dna/ \\
   --logs-uri-prefix s3://project-bucket/logs/dragen-wgts-dna \\
   --project-id project-uuid-1234-abcd
@@ -100,10 +100,7 @@ generate_portal_run_id(){
 }
 
 get_linked_libraries(){
-  for library_id in "${LIBRARY_ID_ARRAY[@]}"; do
-    get_library_obj_from_library_id "${library_id}"
-  done | \
-  jq --slurp --raw-output --compact-output
+  get_library_obj_from_library_id "${LIBRARY_ID}"
 }
 
 get_lambda_function_name(){
@@ -215,7 +212,13 @@ while [[ $# -gt 0 ]]; do
     ;;
   # Positional arguments (library IDs)
     *)
-      LIBRARY_ID_ARRAY+=("$1")
+      # Check if LIBRARY_ID is already set
+      if [[ -n "${LIBRARY_ID}" ]]; then
+		echo_stderr "Error: Only one library id can be provided at a time."
+		print_usage
+		exit 1
+	  fi
+      LIBRARY_ID="$1"
       shift
       ;;
   esac
