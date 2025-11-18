@@ -214,10 +214,10 @@ while [[ $# -gt 0 ]]; do
     *)
       # Check if LIBRARY_ID is already set
       if [[ -n "${LIBRARY_ID}" ]]; then
-		echo_stderr "Error: Only one library id can be provided at a time."
-		print_usage
-		exit 1
-	  fi
+        echo_stderr "Error: Only one library id can be provided at a time."
+        print_usage
+        exit 1
+      fi
       LIBRARY_ID="$1"
       shift
       ;;
@@ -341,8 +341,8 @@ attempts=0
 while :; do
   # Check if we've exceeded max attempts
   if [[ "${attempts}" -ge "${max_attempts}" ]]; then
-	echo_stderr "Exceeded maximum attempts (${max_attempts}) to check for workflow run registration"
-	exit 1
+    echo_stderr "Exceeded maximum attempts (${max_attempts}) to check for workflow run registration"
+    exit 1
   fi
 
   workflow_run_object="$( \
@@ -357,7 +357,7 @@ while :; do
   else
     echo_stderr "Workflow run not yet registered, waiting 10 seconds..."
     sleep 10
-	attempts="$((attempts + 1))"
+    attempts="$((attempts + 1))"
   fi
 
 done
