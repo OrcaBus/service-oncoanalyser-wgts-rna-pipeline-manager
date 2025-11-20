@@ -104,7 +104,8 @@ generate_portal_run_id(){
 }
 
 get_linked_libraries(){
-  get_library_obj_from_library_id "${LIBRARY_ID}"
+  get_library_obj_from_library_id "${LIBRARY_ID}" | \
+  jq --slurp --compact-output
 }
 
 get_lambda_function_name(){
