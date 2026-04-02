@@ -249,6 +249,9 @@
             },
             "Use provided cache uri": {
               "Type": "Pass",
+              "Output": {
+                "cacheUri": "{% $draftEngineParameters.cacheUri %}"
+              },
               "End": true
             },
             "Get default cache uri prefix": {
