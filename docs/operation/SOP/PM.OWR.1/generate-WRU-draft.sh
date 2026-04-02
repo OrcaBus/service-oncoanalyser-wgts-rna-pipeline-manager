@@ -126,19 +126,32 @@ bash generate-WRU-draft.sh library_id \\
 compare_script_version_to_repo(){
   : '
   Compare the version of this script to the version in the repo, and print a warning if they are different
+  If anywhere along the way fails, return unknown
   '
   repo_script_version="$( \
-    curl --silent --fail --location --show-error \
-      --url "https://raw.githubusercontent.com/${GITHUB_REPO}/refs/heads/main/${THIS_SCRIPT_PATH}" | \
     (
-      grep -m1 "SOP_VERSION" | \
-      cut -d'"' -f2
+      # Read the document from the main branch
+      curl --silent --fail --location --show-error \
+        --header "Accept: text/html" \
+        --url "https://raw.githubusercontent.com/${GITHUB_REPO}/refs/heads/main/${THIS_SCRIPT_PATH}" | \
+      ( \
+        # Read through the whole document to prevent curl erroring out
+        tac | tac \
+      ) | \
+      (
+        # Get the first occurrence with grep -m1 (SOP_VERSION="YYYY.MM.DD")
+        # Remove the SOP_VERSION= prefix ("YYYY.MM.DD")
+        # Remove quotes (YYYY.MM.DD)
+        grep -m1 "SOP_VERSION" | \
+        sed 's/^SOP_VERSION=//' | \
+        jq --raw-output
+      ) \
     ) || echo "unknown"
   )"
 
   if [[ "${SOP_VERSION}" != "${repo_script_version}" ]]; then
     echo_stderr "Warning: This script version (${SOP_VERSION}) is different from the version in the repo (${repo_script_version})."
-    echo_stderr "Warning: Consider refetching this script from https://github.com/${GITHUB_REPO}/blob/main/${THIS_SCRIPT_PATH}"
+    echo_stderr "         Consider refetching this script from https://github.com/${GITHUB_REPO}/blob/main/${THIS_SCRIPT_PATH}"
   fi
 }
 
@@ -149,7 +162,7 @@ check_binaries(){
   for binary in aws semver jq curl openssl awk; do
     if ! command -v "${binary}" > /dev/null 2>&1; then
       echo_stderr "Error: ${binary} is not installed. Please install ${binary} and try again. Exiting."
-      exit 1
+      return 1
     fi
   done
 
@@ -157,26 +170,26 @@ check_binaries(){
   jq_version="$(jq --version | cut -d'-' -f2)"
   if [[ "${jq_version}" =~ ^1.\d$ && ! "${jq_version}" == "1.7" ]]; then
     echo_stderr "Error: jq version 1.7 or higher is required. Please update jq and try again. Exiting."
-    exit 1
+    return 1
   fi
   # After version 1.7, jq changed their versioning to semver, so we can use semver to compare versions
   if [[ ! "$(semver compare "${jq_version}" "${MIN_REQUIREMENTS["jq"]}")" -ge 0 ]]; then
     echo_stderr "Error: jq version ${MIN_REQUIREMENTS["jq"]} or higher is required. Please update jq and try again. Exiting."
-    exit 1
+    return 1
   fi
 
   # Check aws cli version is 2.0.0 or higher, as we use the --cli-binary-format option which was added in 2.0.0
   aws_version="$(aws --version 2>&1 | awk '{print $1}' | cut -d'/' -f2)"
   if [[ ! "$(semver compare "${aws_version}" "${MIN_REQUIREMENTS["aws"]}")" -ge 0 ]]; then
     echo_stderr "Error: AWS CLI version ${MIN_REQUIREMENTS["aws"]} or higher is required. Please update AWS CLI and try again. Exiting."
-    exit 1
+    return 1
   fi
 
   # Check curl version is 7.76.0 or higher, as we use the --fail-with-body option which was added in 7.76.0
   curl_version="$(curl --version | head -n1 | awk '{print $2}')"
   if [[ ! "$(semver compare "${curl_version}" "${MIN_REQUIREMENTS["curl"]}")" -ge 0 ]]; then
     echo_stderr "Error: curl version ${MIN_REQUIREMENTS["curl"]} or higher is required. Please update curl and try again. Exiting."
-    exit 1
+    return 1
   fi
 }
 
@@ -204,18 +217,30 @@ get_email_from_portal_token(){
 }
 
 get_hostname_from_ssm(){
-  # Cache the hostname in a global variable to
-  # avoid multiple calls to SSM Parameter Store
+  : '
+    Cache the hostname in a global variable to
+    avoid multiple calls to SSM Parameter Store
+  '
+  local hostname
+  local hostname_ssm_parameter_path
+  hostname_ssm_parameter_path="/hosted_zone/umccr/name"
   if [[ -n "${HOSTNAME}" ]]; then
     echo "${HOSTNAME}"
     return
   fi
 
-  aws ssm get-parameter \
-    --name "/hosted_zone/umccr/name" \
-    --output json | \
-  jq --raw-output \
-    '.Parameter.Value'
+  if ! hostname="$( \
+    aws ssm get-parameter \
+      --name "${hostname_ssm_parameter_path}" \
+      --output json | \
+    jq --raw-output \
+      '.Parameter.Value' \
+  )"; then
+    echo_stderr "Error! Cannot get ssm parameter path ${hostname_ssm_parameter_path}"
+    echo_stderr "       Ensure you're in the correct AWS account and logged in"
+    return 1
+  fi
+  echo "${hostname}"
 }
 
 get_aws_account_prefix(){
