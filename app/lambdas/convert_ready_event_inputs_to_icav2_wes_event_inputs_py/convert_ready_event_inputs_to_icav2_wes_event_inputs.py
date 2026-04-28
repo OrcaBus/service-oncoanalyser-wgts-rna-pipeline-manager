@@ -25,6 +25,8 @@ TO
 
 {
   "mode": "wgts",
+  "publish_dir_mode": "symlink",
+  "outdir": "out",
   "subject_id": "SBJ12345",
   "tumor_rna_sample_id": "L2500971",
   "samplesheet": [
@@ -42,7 +44,8 @@ TO
 }
 
 """
-from typing import Dict
+# Standard imports
+from typing import Dict, Any
 
 # Globals
 DEFAULT_MODE = "wgts"
@@ -50,6 +53,8 @@ DEFAULT_MONOCHROME_LOGS = True
 DEFAULT_GENOME = "GRCh38_hmf"
 DEFAULT_GENOME_VERSION = "38"
 DEFAULT_GENOME_TYPE = "no_alt"
+DEFAULT_PUBLISH_DIR_MODE = "symlink"
+DEFAULT_OUTDIR = "out"
 
 # Default columns for the samplesheet
 DEFAULT_SAMPLESHEET_COLUMNS = [
@@ -94,8 +99,8 @@ def genome_keys_to_snake_case(genome: Dict[str, str]) -> Dict[str, str]:
 
 
 def convert_ready_event_inputs_to_icav2_wes_event_inputs(
-        inputs: Dict[str, any]
-) -> Dict[str, any]:
+        inputs: Dict[str,  Any]
+) -> Dict[str, Any]:
     """
     Convert the ready event inputs to ICAv2 WES event inputs.
     """
@@ -113,6 +118,8 @@ def convert_ready_event_inputs_to_icav2_wes_event_inputs(
         {
             "mode": DEFAULT_MODE,
             "monochrome_logs": inputs.get("monochromeLogs", DEFAULT_MONOCHROME_LOGS),
+            "publish_dir_mode": inputs.get("publishDirMode", DEFAULT_PUBLISH_DIR_MODE),
+            "outdir": inputs.get("outdir", DEFAULT_OUTDIR),
             "samplesheet": samplesheet,
             "genome": inputs.get("genome", DEFAULT_GENOME),
             "genome_version": inputs.get("genomeVersion", DEFAULT_GENOME_VERSION),
