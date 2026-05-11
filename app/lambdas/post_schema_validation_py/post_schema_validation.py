@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Post schema validation for oncoanalyser wgts dna workflows
+Post schema validation for WGTS RNA workflows
 
 Performs the following steps:
 * Validate inputs, ensure each uri is available in the project context.
