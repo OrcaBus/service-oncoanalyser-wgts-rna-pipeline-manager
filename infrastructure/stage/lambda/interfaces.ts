@@ -100,10 +100,16 @@ export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
   },
 };
 
-export interface LambdaInput {
+export interface BuildAllLambdaProps {
+  refDataBucketName: string;
+  testDataBucketName: string;
+}
+
+export interface LambdaInput extends BuildAllLambdaProps {
   lambdaName: LambdaName;
 }
 
-export interface LambdaObject extends LambdaInput {
+export interface LambdaObject {
+  lambdaName: LambdaName;
   lambdaFunction: PythonUvFunction;
 }
