@@ -44,7 +44,6 @@ export interface StepFunctionInput {
 export interface BuildStepFunctionProps extends StepFunctionInput {
   lambdaObjects: LambdaObject[];
   eventBus: IEventBus;
-  isNewWorkflowManagerDeployed: boolean;
   ssmParameterPaths: SsmParameterPaths;
 }
 
@@ -83,7 +82,7 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
     'checkNtsmInternal',
     'validateDraftCompleteSchema',
   ],
-  validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema'],
+  validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema', 'postSchemaValidation'],
   readyEventToIcav2WesRequestEvent: [
     'convertFastqListRowsObjectToCacheUri',
     'getFastqIdListFromFastqRgidList',

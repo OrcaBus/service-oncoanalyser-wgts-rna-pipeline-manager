@@ -11,6 +11,7 @@ export type LambdaName =
   | 'checkNtsmInternal'
   // Validate draft lambdas
   | 'validateDraftCompleteSchema'
+  | 'postSchemaValidation'
   // Ready to ICAv2 WES lambdas
   | 'convertFastqListRowsObjectToCacheUri'
   | 'getFastqIdListFromFastqRgidList'
@@ -29,6 +30,7 @@ export const lambdaNameList: LambdaName[] = [
   'checkNtsmInternal',
   // Validate draft lambdas
   'validateDraftCompleteSchema',
+  'postSchemaValidation',
   // Ready to ICAv2 WES lambdas
   'convertFastqListRowsObjectToCacheUri',
   'getFastqIdListFromFastqRgidList',
@@ -40,8 +42,12 @@ export const lambdaNameList: LambdaName[] = [
 // Requirements interface for Lambda functions
 export interface LambdaRequirements {
   needsOrcabusApiTools?: boolean;
+  needsIcav2Tools?: boolean;
   needsSsmParametersAccess?: boolean;
   needsSchemaRegistryAccess?: boolean;
+  needsHigherMemory?: boolean;
+  needsBucketEnvVars?: boolean;
+  needsWorkflowEnvVars?: boolean;
 }
 
 // Lambda requirements mapping
@@ -70,8 +76,17 @@ export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
   },
   // Validate Draft data
   validateDraftCompleteSchema: {
+    needsOrcabusApiTools: true,
     needsSsmParametersAccess: true,
     needsSchemaRegistryAccess: true,
+    needsWorkflowEnvVars: true,
+  },
+  postSchemaValidation: {
+    needsOrcabusApiTools: true,
+    needsHigherMemory: true,
+    needsIcav2Tools: true,
+    needsBucketEnvVars: true,
+    needsWorkflowEnvVars: true,
   },
   // Convert ready to ICAv2 WES Event - no requirements
   convertFastqListRowsObjectToCacheUri: {
@@ -87,10 +102,16 @@ export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
   },
 };
 
-export interface LambdaInput {
+export interface BuildAllLambdaProps {
+  refDataBucketName: string;
+  testDataBucketName: string;
+}
+
+export interface LambdaInput extends BuildAllLambdaProps {
   lambdaName: LambdaName;
 }
 
-export interface LambdaObject extends LambdaInput {
+export interface LambdaObject {
+  lambdaName: LambdaName;
   lambdaFunction: PythonUvFunction;
 }
