@@ -375,9 +375,6 @@
           "Comment": "Engine Parameters or tags have changed",
           "Next": "Put DRAFT update event",
           "Condition": "{% ( ( $data.tags ? $data.tags : {} ) = $tags ~> $not ) or\n( ( $data.engineParameters ? $data.engineParameters : {} ) = $engineParameters ~> $not ) %}"
-        },
-        {
-          "End": true
         }
       ],
       "Default": "Get libraries with readsets"

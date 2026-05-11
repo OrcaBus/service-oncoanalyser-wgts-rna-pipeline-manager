@@ -8,7 +8,8 @@
       "Assign": {
         "detail": "{% $states.input %}",
         "payload": "{% $states.input.payload ? $states.input.payload : {} %}",
-        "payloadData": "{% $states.input.payload.data ? $states.input.payload.data : {} %}"
+        "payloadData": "{% $states.input.payload.data ? $states.input.payload.data : {} %}",
+        "workflowRunId": "{% $states.input.orcabusId %}"
       }
     },
     "Validate Draft Complete Event": {
@@ -19,7 +20,12 @@
       },
       "Arguments": {
         "FunctionName": "${__validate_draft_complete_schema_lambda_function_arn__}",
-        "Payload": "{% $payloadData %}"
+        "Payload": {
+          "payloadVersion": "{% $payload.version %}",
+          "data": "{% $payloadData %}",
+          "workflowRunId": "{% $workflowRunId %}",
+          "addCommentOnError": true
+        }
       },
       "Retry": [
         {
