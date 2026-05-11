@@ -7,7 +7,7 @@ import {
   DEFAULT_WORKFLOW_VERSION,
   EVENT_BUS_NAME,
   GENOMES_MAP,
-  NEW_WORKFLOW_MANAGER_IS_DEPLOYED,
+  REF_DATA_BUCKET_NAME,
   SSM_PARAMETER_PATH_CACHE_PREFIX,
   SSM_PARAMETER_PATH_DEFAULT_WORKFLOW_VERSION,
   SSM_PARAMETER_PATH_ICAV2_PROJECT_ID,
@@ -20,6 +20,7 @@ import {
   SSM_PARAMETER_PATH_PREFIX_INPUTS_BY_WORKFLOW_VERSION,
   SSM_PARAMETER_PATH_PREFIX_PIPELINE_IDS_BY_WORKFLOW_VERSION,
   SSM_PARAMETER_PATH_WORKFLOW_NAME,
+  TEST_DATA_BUCKET_NAME,
   WORKFLOW_CACHE_PREFIX,
   WORKFLOW_LOGS_PREFIX,
   WORKFLOW_NAME,
@@ -99,7 +100,15 @@ export const getStatelessStackProps = (stage: StageName): StatelessApplicationSt
   return {
     // Event bus object
     eventBusName: EVENT_BUS_NAME,
-    isNewWorkflowManagerDeployed: NEW_WORKFLOW_MANAGER_IS_DEPLOYED[stage],
+
+    // SSM stuff
     ssmParameterPaths: getSsmParameterPaths(),
+
+    // Bucket stuff
+    testDataBucketName: TEST_DATA_BUCKET_NAME,
+    refDataBucketName: REF_DATA_BUCKET_NAME,
+
+    // Stage
+    stageName: stage,
   };
 };

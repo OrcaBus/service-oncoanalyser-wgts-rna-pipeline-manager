@@ -5,6 +5,7 @@ Interfaces for the application
  */
 
 import { SsmParameterPaths, SsmParameterValues } from './ssm/interfaces';
+import { StageName } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
 
 /**
  * Stateful application stack interface.
@@ -26,11 +27,15 @@ export interface StatelessApplicationStackConfig {
   // Event Stuff
   eventBusName: string;
 
-  // Workflow manager stuff
-  isNewWorkflowManagerDeployed: boolean;
-
   // SSM Stuff
   ssmParameterPaths: SsmParameterPaths;
+
+  // Stage Name
+  stageName: StageName;
+
+  // Bucket stuff
+  refDataBucketName: string;
+  testDataBucketName: string;
 }
 
 /* Set versions */
