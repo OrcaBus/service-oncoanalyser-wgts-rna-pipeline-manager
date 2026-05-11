@@ -11,6 +11,7 @@ export type LambdaName =
   | 'checkNtsmInternal'
   // Validate draft lambdas
   | 'validateDraftCompleteSchema'
+  | 'postSchemaValidation'
   // Ready to ICAv2 WES lambdas
   | 'convertFastqListRowsObjectToCacheUri'
   | 'getFastqIdListFromFastqRgidList'
@@ -29,6 +30,7 @@ export const lambdaNameList: LambdaName[] = [
   'checkNtsmInternal',
   // Validate draft lambdas
   'validateDraftCompleteSchema',
+  'postSchemaValidation',
   // Ready to ICAv2 WES lambdas
   'convertFastqListRowsObjectToCacheUri',
   'getFastqIdListFromFastqRgidList',
@@ -40,8 +42,12 @@ export const lambdaNameList: LambdaName[] = [
 // Requirements interface for Lambda functions
 export interface LambdaRequirements {
   needsOrcabusApiTools?: boolean;
+  needsIcav2Tools?: boolean;
   needsSsmParametersAccess?: boolean;
   needsSchemaRegistryAccess?: boolean;
+  needsHigherMemory?: boolean;
+  needsBucketEnvVars?: boolean;
+  needsWorkflowEnvVars?: boolean;
 }
 
 // Lambda requirements mapping
@@ -72,6 +78,13 @@ export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
   validateDraftCompleteSchema: {
     needsSsmParametersAccess: true,
     needsSchemaRegistryAccess: true,
+    needsWorkflowEnvVars: true,
+  },
+  postSchemaValidation: {
+    needsHigherMemory: true,
+    needsIcav2Tools: true,
+    needsBucketEnvVars: true,
+    needsWorkflowEnvVars: true,
   },
   // Convert ready to ICAv2 WES Event - no requirements
   convertFastqListRowsObjectToCacheUri: {

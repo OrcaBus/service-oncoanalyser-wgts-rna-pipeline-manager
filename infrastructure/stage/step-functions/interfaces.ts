@@ -82,7 +82,7 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
     'checkNtsmInternal',
     'validateDraftCompleteSchema',
   ],
-  validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema'],
+  validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema', 'postSchemaValidation'],
   readyEventToIcav2WesRequestEvent: [
     'convertFastqListRowsObjectToCacheUri',
     'getFastqIdListFromFastqRgidList',
