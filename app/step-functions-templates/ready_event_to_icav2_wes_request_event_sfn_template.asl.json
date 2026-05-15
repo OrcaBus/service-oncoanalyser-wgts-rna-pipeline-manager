@@ -4,11 +4,162 @@
   "States": {
     "Save env vars": {
       "Type": "Pass",
-      "Next": "Decompress ORAs",
+      "Next": "Is bam",
       "Assign": {
         "readyEventDetail": "{% $states.input %}",
         "inputs": "{% $states.input.payload.data.inputs %}",
+        "tags": "{% $states.input.payload.data.tags %}",
         "engineParameters": "{% $states.input.payload.data.engineParameters %}"
+      }
+    },
+    "Is bam": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Next": "Get rgid groupings",
+          "Condition": "{% $tags.fromBam ? true : false %}",
+          "Comment": "Is Bam file"
+        }
+      ],
+      "Default": "Decompress ORAs"
+    },
+    "Get rgid groupings": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Arguments": {
+        "LaunchType": "FARGATE",
+        "Cluster": "${__get_fastq_list_rows_from_bam_cluster__}",
+        "TaskDefinition": "${__get_fastq_list_rows_from_bam_task_definition__}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": "{% $split('${__get_fastq_list_rows_from_bam_subnets__}', ',') %}",
+            "SecurityGroups": "{% [ '${__get_fastq_list_rows_from_bam_security_group__}' ] %}"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "${__get_fastq_list_rows_from_bam_container_name__}",
+              "Environment": [
+                {
+                  "Name": "BAM_URI",
+                  "Value": "{% $inputs.bamUri %}"
+                },
+                {
+                  "Name": "OUTPUT_URI",
+                  "Value": "{% $engineParameters.cacheUri & 'fastq_list.jsonl' %}"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "Next": "Wait for ICAv2 to catch up to file creation"
+    },
+    "Wait for ICAv2 to catch up to file creation": {
+      "Type": "Wait",
+      "Seconds": 5,
+      "Next": "Collect readcount stat outputs"
+    },
+    "Collect readcount stat outputs": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Output": {
+        "fastqList": "{% $states.result.Payload.fastqList %}"
+      },
+      "Arguments": {
+        "FunctionName": "${__collect_read_count_stats_lambda_function_arn__}",
+        "Payload": {
+          "jsonlPath": "{% $engineParameters.cacheUri & 'fastq_list.jsonl' %}"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "Next": "For each read group / file size"
+    },
+    "For each read group / file size": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "Write bam to fastq",
+        "States": {
+          "Write bam to fastq": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::ecs:runTask.sync",
+            "Arguments": {
+              "LaunchType": "FARGATE",
+              "Cluster": "${__bam_to_fastq_cluster__}",
+              "TaskDefinition": "${__bam_to_fastq_task_definition__}",
+              "NetworkConfiguration": {
+                "AwsvpcConfiguration": {
+                  "Subnets": "{% $split('${__bam_to_fastq_subnets__}', ',') %}",
+                  "SecurityGroups": "{% [ '${__bam_to_fastq_security_group__}' ] %}"
+                }
+              },
+              "Overrides": {
+                "ContainerOverrides": [
+                  {
+                    "Name": "${__bam_to_fastq_container_name__}",
+                    "Environment": [
+                      {
+                        "Name": "BAM_FILE",
+                        "Value": "{% $inputs.bamUri %}"
+                      },
+                      {
+                        "Name": "READ_GROUP_ID",
+                        "Value": "{% $states.input.rgid %}"
+                      },
+                      {
+                        "Name": "READ_COUNT",
+                        "Value": "{% $states.input.readCount ~> $string %}"
+                      },
+                      {
+                        "Name": "IS_PAIRED_END",
+                        "Value": "{% $states.input.isPairedEnd ~> $string %}"
+                      },
+                      {
+                        "Name": "FASTQ_OUTPUT_URI",
+                        "Value": "{% $engineParameters.cacheUri & 'fastq/' & ($states.input.lane ~> $string) & '/fastq.r1.gz'  %}"
+                      },
+                      {
+                        "Name": "FASTQ_OUTPUT_2_URI",
+                        "Value": "{% $states.input.isPairedEnd ? $engineParameters.cacheUri & 'fastq/' & ($states.input.lane ~> $string) & '/fastq.r2.gz' : '' %}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "Output": {
+              "rgid": "{% $states.input.rgid %}",
+              "rgsm": "{% $inputs.sampleId %}",
+              "rglb": "{% $tags.libraryId %}",
+              "lane": "{% $states.input.lane %}",
+              "read1FileUri": "{% $engineParameters.cacheUri & 'fastq/' & ($states.input.lane ~> $string) & '/fastq.r1.gz' %}",
+              "read2FileUri": "{% $states.input.isPairedEnd ? $engineParameters.cacheUri & 'fastq/' & ($states.input.lane ~> $string) & '/fastq.r2.gz' : null %}"
+            },
+            "End": true
+          }
+        }
+      },
+      "Next": "Convert ready event data inputs to icav2 wes event inputs",
+      "Items": "{% $states.input.fastqList %}",
+      "Output": {
+        "fastqListRows": "{% [ $states.result ~> $merge ] %}"
       }
     },
     "Decompress ORAs": {
