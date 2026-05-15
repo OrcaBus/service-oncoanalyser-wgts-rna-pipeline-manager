@@ -91,11 +91,14 @@ check_is_paired_end(){
         --header-only \
         "${presigned_url}"; \
       # And the first 10000 reads of a given readgroup
-      samtools view \
-        --no-header \
-        --read-group "${rgid}" \
-        "${presigned_url}" | \
-      head -n10000 \
+      # Prevent SIGPIPE termination from cascading the error
+      (
+        samtools view \
+          --no-header \
+          --read-group "${rgid}" \
+          "${presigned_url}" | \
+        head -n "${REQUIRED_READS_FOR_PAIRED_END_TEST}"
+      ) || true \
     ) | \
     samtools view \
       --count \
@@ -158,6 +161,7 @@ SPLIT_PREFIX="rgid"
 THREADS=8
 BAM_INDEX_FILE_NAME="bam_index.bai"
 ICAV2_ACCESS_CREDS_FILE="access_creds.sh"
+REQUIRED_READS_FOR_PAIRED_END_TEST=10000
 
 # Get the presigned url of the bam file
 presigned_url="$(get_presigned_url "${BAM_URI}")"
