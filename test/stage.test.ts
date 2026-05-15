@@ -23,7 +23,7 @@ describe('cdk-nag-stateless-toolchain-stack', () => {
         account: PROD_ACCOUNT_ID,
         region: REGION,
       },
-      ...getStatelessStackProps('PROD')
+      ...getStatelessStackProps('PROD'),
     }
   );
 

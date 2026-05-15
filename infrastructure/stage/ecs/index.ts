@@ -11,7 +11,8 @@ import * as path from 'path';
 import { ECS_DIR } from '../constants';
 import {
   BuildAllFargateEcsTasksProps,
-  BuildFargateEcsTaskProps, ecsResourcesMap,
+  BuildFargateEcsTaskProps,
+  ecsResourcesMap,
   ecsTaskNameList,
   EcsTaskObject,
 } from './interfaces';
