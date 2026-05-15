@@ -3,6 +3,8 @@ import { StateMachine } from 'aws-cdk-lib/aws-stepfunctions';
 
 import { LambdaName, LambdaObject } from '../lambda/interfaces';
 import { SsmParameterPaths } from '../ssm/interfaces';
+import { EcsFargateTaskConstruct } from '@orcabus/platform-cdk-constructs/ecs';
+import { EcsTaskObject } from '../ecs/interfaces';
 
 /**
  * Step Function Interfaces
@@ -35,6 +37,9 @@ export interface StepFunctionRequirements {
 
   // SSM Stuff
   needsSsmParameterStoreAccess?: boolean;
+
+  // ECS Stuff
+  needsEcsPermissions?: boolean;
 }
 
 export interface StepFunctionInput {
@@ -45,6 +50,7 @@ export interface BuildStepFunctionProps extends StepFunctionInput {
   lambdaObjects: LambdaObject[];
   eventBus: IEventBus;
   ssmParameterPaths: SsmParameterPaths;
+  ecsFargateTaskObjects: EcsTaskObject[];
 }
 
 export interface StepFunctionObject extends StepFunctionInput {
@@ -65,6 +71,7 @@ export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunction
   },
   readyEventToIcav2WesRequestEvent: {
     needsEventPutPermission: true,
+    needsEcsPermissions: true,
   },
   icav2WesAscEventToWorkflowRscEvent: {
     needsEventPutPermission: true,
@@ -84,6 +91,7 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
   ],
   validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema', 'postSchemaValidation'],
   readyEventToIcav2WesRequestEvent: [
+    'collectReadCountStats',
     'convertFastqListRowsObjectToCacheUri',
     'getFastqIdListFromFastqRgidList',
     'convertReadyEventInputsToIcav2WesEventInputs',
