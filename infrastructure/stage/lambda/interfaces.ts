@@ -13,6 +13,7 @@ export type LambdaName =
   | 'validateDraftCompleteSchema'
   | 'postSchemaValidation'
   // Ready to ICAv2 WES lambdas
+  | 'collectReadCountStats'
   | 'convertFastqListRowsObjectToCacheUri'
   | 'getFastqIdListFromFastqRgidList'
   | 'convertReadyEventInputsToIcav2WesEventInputs'
@@ -32,6 +33,7 @@ export const lambdaNameList: LambdaName[] = [
   'validateDraftCompleteSchema',
   'postSchemaValidation',
   // Ready to ICAv2 WES lambdas
+  'collectReadCountStats',
   'convertFastqListRowsObjectToCacheUri',
   'getFastqIdListFromFastqRgidList',
   'convertReadyEventInputsToIcav2WesEventInputs',
@@ -89,6 +91,10 @@ export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
     needsWorkflowEnvVars: true,
   },
   // Convert ready to ICAv2 WES Event - no requirements
+  collectReadCountStats: {
+    needsIcav2Tools: true,
+    needsHigherMemory: true,
+  },
   convertFastqListRowsObjectToCacheUri: {
     needsOrcabusApiTools: true,
   },
