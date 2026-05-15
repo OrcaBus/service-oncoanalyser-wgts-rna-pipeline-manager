@@ -16,8 +16,24 @@ export interface BuildAllFargateEcsTasksProps {
   hostnameSsmParameter: IParameter;
 }
 
+export interface EcsRequirements {
+  cpus: number,
+  memoryGiB: number;
+}
+
 export interface BuildFargateEcsTaskProps extends BuildAllFargateEcsTasksProps {
   taskName: EcsTaskName;
+}
+
+export const ecsResourcesMap: Record<EcsTaskName, EcsRequirements> = {
+  getFastqListRowsFromBam: {
+    cpus: 2,
+    memoryGiB: 4
+  },
+  bamToFastq: {
+    cpus: 8,
+    memoryGiB: 16
+  },
 }
 
 export interface EcsTaskObject {

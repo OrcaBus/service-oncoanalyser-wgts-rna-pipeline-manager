@@ -11,7 +11,7 @@ import * as path from 'path';
 import { ECS_DIR } from '../constants';
 import {
   BuildAllFargateEcsTasksProps,
-  BuildFargateEcsTaskProps,
+  BuildFargateEcsTaskProps, ecsResourcesMap,
   ecsTaskNameList,
   EcsTaskObject,
 } from './interfaces';
@@ -23,11 +23,8 @@ function buildEcsFargateTask(scope: Construct, props: BuildFargateEcsTaskProps) 
   /*
     Build the Upload SinglePart File Fargate task.
 
-    We use 2 CPUs for this task but we need a large amount of memory
-    Since curl downloads and stored in memory and THEN uploads to S3 from memory
-    The containerName will be set to 'upload-single-part-file-task'
-    and the docker path can be found under ECS_DIR / 'ora_decompression'
-    */
+    We use 8 CPUs for this task as we are running a few components simultaneously
+  */
 
   /*
   Generate an ECS Fargate task construct with the provided properties.
@@ -36,8 +33,8 @@ function buildEcsFargateTask(scope: Construct, props: BuildFargateEcsTaskProps) 
   const ecsTask = new EcsFargateTaskConstruct(scope, `${props.taskName}-ecs`, {
     containerName: props.taskName,
     dockerPath: path.join(ECS_DIR, camelCaseToSnakeCase(props.taskName)),
-    nCpus: 8, // 8 CPUs
-    memoryLimitGiB: 16, // 16 GB of memory (maximum for 2 CPUs)
+    nCpus: ecsResourcesMap[props.taskName].cpus,
+    memoryLimitGiB: ecsResourcesMap[props.taskName].memoryGiB,
     architecture: 'ARM64',
     runtimePlatform: CPU_ARCHITECTURE_MAP['ARM64'],
   });
