@@ -1,5 +1,8 @@
 import { StageName } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
-import { ICAV2_PROJECT_ID } from '@orcabus/platform-cdk-constructs/shared-config/icav2';
+import {
+  ICAV2_ACCESS_TOKEN_SECRET_ID,
+  ICAV2_PROJECT_ID,
+} from '@orcabus/platform-cdk-constructs/shared-config/icav2';
 import { StatefulApplicationStackConfig, StatelessApplicationStackConfig } from './interfaces';
 import {
   DEFAULT_PAYLOAD_VERSION,
@@ -30,6 +33,8 @@ import {
 } from './constants';
 import { substituteBucketConstants } from './utils';
 import { SsmParameterPaths, SsmParameterValues } from './ssm/interfaces';
+import { DEFAULT_ORCABUS_TOKEN_SECRET_ID } from '@orcabus/platform-cdk-constructs/lambda/config';
+import { HOSTED_ZONE_DOMAIN_PARAMETER_NAME } from '@orcabus/platform-cdk-constructs/api-gateway';
 
 export const getSsmParameterValues = (stage: StageName): SsmParameterValues => {
   return {
@@ -110,5 +115,10 @@ export const getStatelessStackProps = (stage: StageName): StatelessApplicationSt
 
     // Stage
     stageName: stage,
+
+    // SSM and secret stuff
+    icav2AccessTokenSecretId: ICAV2_ACCESS_TOKEN_SECRET_ID[stage],
+    orcabusTokenSecretId: DEFAULT_ORCABUS_TOKEN_SECRET_ID,
+    hostnameSsmParameterName: HOSTED_ZONE_DOMAIN_PARAMETER_NAME,
   };
 };

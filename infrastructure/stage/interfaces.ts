@@ -36,10 +36,18 @@ export interface StatelessApplicationStackConfig {
   // Bucket stuff
   refDataBucketName: string;
   testDataBucketName: string;
+
+  // SSM and secrets stuff
+  icav2AccessTokenSecretId: string;
+  orcabusTokenSecretId: string;
+  hostnameSsmParameterName: string;
 }
 
 /* Set versions */
 export type WorkflowVersionType = '2.0.0' | '2.1.0' | '2.2.0';
+export type PayloadVersionType = '2025.08.05' | '2026.05.12';
+
+export const payloadVersionList: PayloadVersionType[] = ['2025.08.05', '2026.05.12'];
 
 /* Set genomes */
 export type GenomeType = 'GRCh38_umccr' | 'GRCh38_hmf';

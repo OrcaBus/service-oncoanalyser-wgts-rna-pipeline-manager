@@ -4,6 +4,7 @@ import { SynthesisMessage } from 'aws-cdk-lib/cx-api';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { StatelessApplicationStack } from '../infrastructure/stage/stateless-application-stack';
 import { getStatelessStackProps } from '../infrastructure/stage/config';
+import { PROD_ACCOUNT_ID, REGION } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
 
 function synthesisMessageToString(sm: SynthesisMessage): string {
   return `${sm.entry.data} [${sm.id}]`;
@@ -17,7 +18,13 @@ describe('cdk-nag-stateless-toolchain-stack', () => {
     app,
     'DeployStack',
     // Pick the prod environment to test as it is the most strict
-    getStatelessStackProps('PROD')
+    {
+      env: {
+        account: PROD_ACCOUNT_ID,
+        region: REGION,
+      },
+      ...getStatelessStackProps('PROD'),
+    }
   );
 
   Aspects.of(applicationStack).add(new AwsSolutionsChecks());

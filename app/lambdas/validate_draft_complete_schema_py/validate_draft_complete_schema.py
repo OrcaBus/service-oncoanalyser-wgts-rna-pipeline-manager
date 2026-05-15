@@ -4,17 +4,18 @@
 Download the draft schema, validate it against the current schema, and print the results.
 """
 
-# Standard Imports
+# Standard imports
 import json
-import logging
 import boto3
 import typing
 import jsonschema
 from os import environ
 from typing import Dict
+import logging
 from jsonschema import ValidationError
+from pathlib import Path
 
-# Data harmonisation
+# Layer imports
 from orcabus_api_tools.workflow import add_comment_to_workflow_run
 
 # Type checking imports
@@ -24,14 +25,14 @@ if typing.TYPE_CHECKING:
 
 # Globals
 SSM_REGISTRY_NAME_ENV_VAR = "SSM_REGISTRY_NAME"
-SSM_SCHEMA_NAME_ENV_VAR = "SSM_SCHEMA_NAME"
+SSM_SCHEMA_PATH_ENV_VAR = "SSM_SCHEMA_PATH"
 WORKFLOW_NAME_ENV_VAR = "WORKFLOW_NAME"
 COMMENT_AUTHOR = "{WORKFLOW_NAME}-workflow-validation-service"
+DEFAULT_PAYLOAD_VERSION_ENV_VAR = "DEFAULT_PAYLOAD_VERSION"
 
 # Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
 
 
 def get_ssm_parameter_value(parameter_name: str) -> str:
@@ -107,19 +108,23 @@ def validate_draft_schema(
         return False
     return True
 
+
 def handler(event, context) -> Dict[str, bool]:
     """
     Given a draft schema, validate it against the current schema and print the results.
     :return:
     """
     # Get the event data
+    payload_version = event.get("payloadVersion", environ[DEFAULT_PAYLOAD_VERSION_ENV_VAR])
     payload_data = event.get('data')
     workflow_run_id = event.get("workflowRunId", "")
     comment_error = event.get("addCommentOnError", False)
 
     # Get the SSM parameters
     schema_registry = get_ssm_parameter_value(environ[SSM_REGISTRY_NAME_ENV_VAR])
-    schema_name = json.loads(get_ssm_parameter_value(environ[SSM_SCHEMA_NAME_ENV_VAR]))['schemaName']
+    schema_name = json.loads(get_ssm_parameter_value(
+        str(Path(environ[SSM_SCHEMA_PATH_ENV_VAR]) / payload_version)
+    ))['schemaName']
 
     # Get the current schema from the schema registry
     current_schema = get_schema_from_registry(

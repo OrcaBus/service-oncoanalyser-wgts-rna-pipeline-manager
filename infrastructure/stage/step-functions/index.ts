@@ -44,7 +44,7 @@ function createStateMachineDefinitionSubstitutions(props: BuildStepFunctionProps
   for (const lambdaObject of lambdaFunctions) {
     const sfnSubstitutionKey = `__${camelCaseToSnakeCase(lambdaObject.lambdaName)}_lambda_function_arn__`;
     definitionSubstitutions[sfnSubstitutionKey] =
-      lambdaObject.lambdaFunction.currentVersion.functionArn;
+      lambdaObject.lambdaFunction.latestVersion.functionArn;
   }
 
   // Miscellaneous substitutions
@@ -67,6 +67,26 @@ function createStateMachineDefinitionSubstitutions(props: BuildStepFunctionProps
       FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE;
   }
 
+  /* Needs Ecs permissions */
+  if (sfnRequirements.needsEcsPermissions) {
+    for (const ecsTask of props.ecsFargateTaskObjects) {
+      const taskNameSnakeCase = camelCaseToSnakeCase(ecsTask.taskName);
+      definitionSubstitutions[`__${taskNameSnakeCase}_cluster__`] =
+        ecsTask.ecsFargateTaskConstruct.cluster.clusterArn;
+      definitionSubstitutions[`__${taskNameSnakeCase}_task_definition__`] =
+        ecsTask.ecsFargateTaskConstruct.taskDefinition.taskDefinitionArn;
+      definitionSubstitutions[`__${taskNameSnakeCase}_subnets__`] =
+        ecsTask.ecsFargateTaskConstruct.cluster.vpc.privateSubnets
+          .map((subnet) => subnet.subnetId)
+          .join(',');
+      definitionSubstitutions[`__${taskNameSnakeCase}_security_group__`] =
+        ecsTask.ecsFargateTaskConstruct.securityGroup.securityGroupId;
+      definitionSubstitutions[`__${taskNameSnakeCase}_container_name__`] =
+        ecsTask.ecsFargateTaskConstruct.containerDefinition.containerName;
+    }
+  }
+
+  /* SSM Stuff */
   if (sfnRequirements.needsSsmParameterStoreAccess) {
     // Default parameter paths
     definitionSubstitutions['__default_project_id_ssm_parameter_name__'] =
@@ -110,8 +130,18 @@ function wireUpStateMachinePermissions(props: WireUpPermissionsProps): void {
 
   /* Allow the state machine to invoke the lambda function */
   for (const lambdaObject of lambdaFunctions) {
-    lambdaObject.lambdaFunction.currentVersion.grantInvoke(props.sfnObject);
+    lambdaObject.lambdaFunction.grantInvoke(props.sfnObject);
   }
+  NagSuppressions.addResourceSuppressions(
+    props.sfnObject,
+    [
+      {
+        id: 'AwsSolutions-IAM5',
+        reason: 'We need to give access to the full prefix to run any lambda version',
+      },
+    ],
+    true
+  );
 
   if (sfnRequirements.needsEventPutPermission) {
     props.eventBus.grantPutEventsTo(props.sfnObject);
@@ -136,6 +166,35 @@ function wireUpStateMachinePermissions(props: WireUpPermissionsProps): void {
         {
           id: 'AwsSolutions-IAM5',
           reason: 'We need to give access to the full prefix for the SSM parameter store',
+        },
+      ],
+      true
+    );
+  }
+
+  /* Grant invoke on the fargate upload single file task */
+  if (sfnRequirements.needsEcsPermissions) {
+    for (const ecsTask of props.ecsFargateTaskObjects) {
+      ecsTask.ecsFargateTaskConstruct.taskDefinition.grantRun(props.sfnObject);
+    }
+
+    /* Grant the state machine access to monitor the tasks */
+    props.sfnObject.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [
+          `arn:aws:events:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:rule/StepFunctionsGetEventsForECSTaskRule`,
+        ],
+        actions: ['events:PutTargets', 'events:PutRule', 'events:DescribeRule'],
+      })
+    );
+
+    /* Will need cdk nag suppressions for this */
+    NagSuppressions.addResourceSuppressions(
+      props.sfnObject,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'Need ability to put targets and rules for ECS task monitoring',
         },
       ],
       true
