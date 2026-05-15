@@ -15,17 +15,19 @@ CACHE_URI_PREFIX=""
 PROJECT_ID=""
 COMMENT=""  # Use -c or --comment to set a comment to be added to the payload
 SAVE_DRAFT_PAYLOAD=""
+INPUT_DATA_FILE=""
+FROM_BAM_TAG="false"
 
 # Workflow constants
 WORKFLOW_NAME="oncoanalyser-wgts-rna"
 WORKFLOW_VERSION="2.2.0"
 EXECUTION_ENGINE="ICA"
 CODE_VERSION="b94cbc7"
-PAYLOAD_VERSION="2025.08.05"
+PAYLOAD_VERSION="2026.05.12"
 ANALYSIS_STORAGE_SIZE="SMALL"
 
 # SOP constants
-SOP_VERSION="2026.03.05"
+SOP_VERSION="2026.05.14"
 SOP_ID="PM.OWR.1"
 GITHUB_REPO="OrcaBus/service-oncoanalyser-wgts-rna-pipeline-manager"
 THIS_SCRIPT_PATH="docs/operation/SOP/${SOP_ID}/generate-WRU-draft.sh"
@@ -57,9 +59,11 @@ generate-WRU-draft.sh (library_id)...
                       [-t | --cache-uri-prefix <s3_uri>]
                       [-p | --project-id <project_id>]
                       [-s | --analysis-storage-size <analysis_storage_size>]
+                      [--input-data <input_data_path>]
                       [--save-draft-payload <output_file>]
                       [--workflow-version <workflow_version>]
                       [--code-version <code_version>]
+                      [--from-bam]
 
 Description:
 Run this script to generate a draft WorkflowRunUpdate event for the specified library IDs.
@@ -72,6 +76,16 @@ You will also need to ensure that the ICA pipeline ID attributed to the workflow
 available in the ICA project id specified.
 
 The output uri prefix, cache uri and logs uri prefixes must be set to a location inside the s3 prefix that the ICA project is mounted on.
+
+Input data note:
+The populate draft data service will try to auto-populate inputs based on the information it already has.
+This may have unintended consequences if there exists two downstream analyses and you want inputs from one specific analysis.
+In this circumstance it is recommended to use the '--input-data <json_file>' to generate an existing data object to populate, for example:
+{
+  \"inputs\": {
+    \"bamUri\": \"s3://path/to/specific/wts.bam\"
+  }
+}
 
 Positional arguments:
   library_id:   One or more library IDs to link to the WorkflowRunUpdate event.
@@ -89,6 +103,10 @@ Keyword arguments:
   --save-draft-payload=<output_file>            (Optional) (Optional) Save the generated draft event to local file <output_file> after pushing to event bridge for record purposes.
   --workflow-version=<workflow_version>         (Optional) Override the default workflow version.
   --code-version=<code_version>                 (Optional) Override the default code version.
+  --input-data=<input_data_file>                (Optional) Add existing input data to the data section of the payload.
+                                                           This might be used to explicitly set input files
+                                                           See input data note for more information.
+  --from-bam                                    (Optional) Adds the tag 'fromBam' if set.
 
 Environment:
   PORTAL_TOKEN: (Required) Your personal portal token from https://portal.${hostname}/
@@ -418,81 +436,95 @@ while [[ $# -gt 0 ]]; do
       ;;
     # Output URI prefix
     -o|--output-uri-prefix)
-    OUTPUT_URI_PREFIX="$2"
-    shift 2
-    ;;
-  -o=*|--output-uri-prefix=*)
-    OUTPUT_URI_PREFIX="${1#*=}"
-    shift
-    ;;
-  # Log URI prefix
-  -l|--logs-uri-prefix)
-    LOGS_URI_PREFIX="$2"
-    shift 2
-    ;;
-  -l=*|--logs-uri-prefix=*)
-    LOGS_URI_PREFIX="${1#*=}"
-    shift
-    ;;
-  # Cache URI prefix
-  -t|--cache-uri-prefix)
-    CACHE_URI_PREFIX="$2"
-    shift 2
-    ;;
-  -t=*|--cache-uri-prefix=*)
-    CACHE_URI_PREFIX="${1#*=}"
-    shift
-    ;;
-  # Project ID
-  -p|--project-id)
-    PROJECT_ID="$2"
-    shift 2
-    ;;
-  -p=*|--project-id=*)
-    PROJECT_ID="${1#*=}"
-    shift
-    ;;
-  # Analysis Storage Size
-  -s|--analysis-storage-size)
-    ANALYSIS_STORAGE_SIZE="$2"
-    shift 2
-    ;;
-  -s=*|--analysis-storage-size=*)
-    ANALYSIS_STORAGE_SIZE="${1#*=}"
-    shift
-    ;;
-  # Save draft payload to file
-  --save-draft-payload)
-    SAVE_DRAFT_PAYLOAD="$2"
-    shift 2
-    ;;
-  --save-draft-payload=*)
-    SAVE_DRAFT_PAYLOAD="${1#*=}"
-    shift
-    ;;
-  # Workflow version
-  --workflow-version)
-    WORKFLOW_VERSION="$2"
-    shift 2
-    ;;
-  --workflow-version=*)
-    WORKFLOW_VERSION="${1#*=}"
-    shift
-    ;;
-  # Code version
-  --code-version)
-    CODE_VERSION="$2"
-    shift 2
-    ;;
-  --code-version=*)
-    CODE_VERSION="${1#*=}"
-    shift
-    ;;
-  # Positional arguments (library IDs)
-  *)
-    LIBRARY_ID_ARRAY+=("$1")
-    shift
-    ;;
+      OUTPUT_URI_PREFIX="$2"
+      shift 2
+      ;;
+    -o=*|--output-uri-prefix=*)
+      OUTPUT_URI_PREFIX="${1#*=}"
+      shift
+      ;;
+    # Log URI prefix
+    -l|--logs-uri-prefix)
+      LOGS_URI_PREFIX="$2"
+      shift 2
+      ;;
+    -l=*|--logs-uri-prefix=*)
+      LOGS_URI_PREFIX="${1#*=}"
+      shift
+      ;;
+    # Cache URI prefix
+    -t|--cache-uri-prefix)
+      CACHE_URI_PREFIX="$2"
+      shift 2
+      ;;
+    -t=*|--cache-uri-prefix=*)
+      CACHE_URI_PREFIX="${1#*=}"
+      shift
+      ;;
+    # Project ID
+    -p|--project-id)
+      PROJECT_ID="$2"
+      shift 2
+      ;;
+    -p=*|--project-id=*)
+      PROJECT_ID="${1#*=}"
+      shift
+      ;;
+    # Analysis Storage Size
+    -s|--analysis-storage-size)
+      ANALYSIS_STORAGE_SIZE="$2"
+      shift 2
+      ;;
+    -s=*|--analysis-storage-size=*)
+      ANALYSIS_STORAGE_SIZE="${1#*=}"
+      shift
+      ;;
+    # Save draft payload to file
+    --save-draft-payload)
+      SAVE_DRAFT_PAYLOAD="$2"
+      shift 2
+      ;;
+    --save-draft-payload=*)
+      SAVE_DRAFT_PAYLOAD="${1#*=}"
+      shift
+      ;;
+    # Workflow version
+    --workflow-version)
+      WORKFLOW_VERSION="$2"
+      shift 2
+      ;;
+    --workflow-version=*)
+      WORKFLOW_VERSION="${1#*=}"
+      shift
+      ;;
+    # Code version
+    --code-version)
+      CODE_VERSION="$2"
+      shift 2
+      ;;
+    --code-version=*)
+      CODE_VERSION="${1#*=}"
+      shift
+      ;;
+    # Input data
+    --input-data)
+      INPUT_DATA_FILE="$2"
+      shift 2
+      ;;
+    --input-data=*)
+      INPUT_DATA_FILE="${1#*=}"
+      shift
+      ;;
+    # From fastq
+    --from-bam)
+      FROM_BAM_TAG="true"
+      shift
+      ;;
+    # Positional arguments (library IDs)
+    *)
+      LIBRARY_ID_ARRAY+=("$1")
+      shift
+      ;;
   esac
 done
 
@@ -550,7 +582,11 @@ declare -A MIN_REQUIREMENTS=(
   ["aws"]="2.0.0"    # Because what are you doing still on V1?
   ["curl"]="7.76.0"  # For --fail-with-body option
 )
-check_binaries
+if ! check_binaries; then
+  echo_stderr "Error: One or more required binaries are not installed. Please install the required binaries and try again. Exiting."
+  print_usage
+  exit 1
+fi
 
 # AWS Account ID by prefix
 declare -A PREFIX_BY_AWS_ACCOUNT_ID=(
@@ -623,25 +659,45 @@ fi
 echo_stderr "Generating engine parameters"
 engine_parameters=$( \
   jq --null-input --raw-output --compact-output \
-  --arg outputUriPrefix "${OUTPUT_URI_PREFIX}" \
-  --arg logsUriPrefix "${LOGS_URI_PREFIX}" \
-  --arg cacheUriPrefix "${CACHE_URI_PREFIX}" \
-  --arg projectId "${PROJECT_ID}" \
-  --arg portalRunId "${portal_run_id}" \
-  --arg analysisStorageSize "${ANALYSIS_STORAGE_SIZE}" \
-  '
-    # Get the engine parameters
-    {
-      "outputUri": ( if $outputUriPrefix != "" then ($outputUriPrefix + $portalRunId + "/") else "" end ),
-      "logsUri": ( if $logsUriPrefix != "" then ($logsUriPrefix + $portalRunId + "/") else "" end ),
-      "cacheUri": ( if $cacheUriPrefix != "" then ($cacheUriPrefix + $portalRunId + "/") else "" end ),
-      "projectId": $projectId,
-      "analysisStorageSize": $analysisStorageSize
-    } |
-    # Remove empty values
-    with_entries(select(.value != ""))
-  ' \
+    --arg outputUriPrefix "${OUTPUT_URI_PREFIX}" \
+    --arg logsUriPrefix "${LOGS_URI_PREFIX}" \
+    --arg cacheUriPrefix "${CACHE_URI_PREFIX}" \
+    --arg projectId "${PROJECT_ID}" \
+    --arg portalRunId "${portal_run_id}" \
+    --arg analysisStorageSize "${ANALYSIS_STORAGE_SIZE}" \
+    '
+      # Get the engine parameters
+      {
+        "outputUri": ( if $outputUriPrefix != "" then ($outputUriPrefix + $portalRunId + "/") else "" end ),
+        "logsUri": ( if $logsUriPrefix != "" then ($logsUriPrefix + $portalRunId + "/") else "" end ),
+        "cacheUri": ( if $cacheUriPrefix != "" then ($cacheUriPrefix + $portalRunId + "/") else "" end ),
+        "projectId": $projectId,
+        "analysisStorageSize": $analysisStorageSize
+      } |
+      # Remove empty values
+      with_entries(select(.value != ""))
+    ' \
 )
+
+# Check for existing input data
+if [[ -n "${INPUT_DATA_FILE}" ]]; then
+  # Check if input data file exists
+  if [[ ! -f "${INPUT_DATA_FILE}" ]]; then
+    echo_stderr "${INPUT_DATA_FILE} does not exist"
+    print_usage
+    exit 1
+  fi
+  # Check input data is in json format
+  if ! jq -e 'type == "object"' < "${INPUT_DATA_FILE}" >/dev/null 2>&1; then
+    echo_stderr "${INPUT_DATA_FILE} is not in json format"
+    print_usage
+    exit 1
+  fi
+  # Load in input data
+  input_data_json_str="$(jq < "${INPUT_DATA_FILE}")"
+else
+  input_data_json_str="null"
+fi
 
 # Generate the event
 lambda_payload="$( \
@@ -651,14 +707,16 @@ lambda_payload="$( \
     --arg portalRunId "${portal_run_id}" \
     --argjson libraries "${libraries}" \
     --argjson engineParameters "${engine_parameters}" \
+    --argjson inputData "${input_data_json_str}" \
+    --argjson fromBam "${FROM_BAM_TAG}" \
     '
-    {
-      "status": "DRAFT",
-      "timestamp": (now | todateiso8601),
-      "workflow": $workflow,
-      "workflowRunName": ("umccr--manual--" + $workflow["name"] + "--" + ($workflow["version"] | gsub("\\."; "-")) + "--" + $portalRunId),
-      "portalRunId": $portalRunId,
-      "libraries": $libraries,
+      {
+        "status": "DRAFT",
+        "timestamp": (now | todateiso8601),
+        "workflow": $workflow,
+        "workflowRunName": ("umccr--manual--" + $workflow["name"] + "--" + ($workflow["version"] | gsub("\\."; "-")) + "--" + $portalRunId),
+        "portalRunId": $portalRunId,
+        "libraries": $libraries,
       } |
       if ( ($engineParameters | length) > 0 ) then
         .["payload"] = {
@@ -667,6 +725,41 @@ lambda_payload="$( \
             "engineParameters": $engineParameters
           }
         }
+      end |
+      # If we have input data
+      if $inputData then
+        # Initialise payload if not set
+        if (.["payload"] | not) then
+          .["payload"] = {}
+        end |
+        # Set payload version
+        .["payload"]["version"] = $payloadVersion |
+        # If payload data already exists we need to merge
+        if .["payload"]["data"] then
+          .["payload"]["data"] = ($inputData * .["payload"]["data"])
+        # Otherwise just use the input json data
+        else
+          .["payload"]["data"] = $inputData
+        end
+      end |
+      # If we have the fromBam parameter set
+      if $fromBam then
+        # Initialise payload if not set
+        if (.["payload"] | not) then
+          .["payload"] = {}
+        end |
+        # Set the payload version
+        .["payload"]["version"] = $payloadVersion |
+        # Initialise "data" if not set
+        if (.["payload"]["data"] | not) then
+          .["payload"]["data"] = {}
+        end |
+        # Update the tag fromBam
+        if .["payload"]["data"]["tags"] then
+          .["payload"]["data"]["tags"]["fromBam"] = true
+        else
+          .["payload"]["data"]["tags"] = {"fromBam": true}
+        end
       end
     ' \
 )"
@@ -775,4 +868,4 @@ if ! comment_response="$(generate_workflow_comment "${workflow_run_orcabus_id}" 
 fi
 
 echo_stderr "Workflow Run Creation Event complete!"
-echo_stderr "Please head to 'https://orcaui.$(get_hostname_from_ssm)/runs/workflow/${workflow_run_orcabus_id}' to track the status of the workflow run"
+echo_stderr "Please head to 'https://orcaui.$(get_hostname_from_ssm)/workflows/workflowRuns/${workflow_run_orcabus_id}' to track the status of the workflow run"
