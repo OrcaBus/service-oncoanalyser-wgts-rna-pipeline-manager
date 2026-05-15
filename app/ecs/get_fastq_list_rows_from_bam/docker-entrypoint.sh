@@ -20,7 +20,7 @@ echo_stderr(){
 get_filemanager_id_from_uri(){
   : '
   Given an s3 uri get the filemanager id of the file
-  'dr
+  '
   local s3_uri="${1}"
   local bucket
   local key

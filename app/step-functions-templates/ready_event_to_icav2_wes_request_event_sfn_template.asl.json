@@ -159,7 +159,7 @@
       "Next": "Convert ready event data inputs to icav2 wes event inputs",
       "Items": "{% $states.input.fastqList %}",
       "Output": {
-        "fastqListRows": "{% [ $states.result ~> $merge ] %}"
+        "fastqListRows": "{% $states.result %}"
       }
     },
     "Decompress ORAs": {

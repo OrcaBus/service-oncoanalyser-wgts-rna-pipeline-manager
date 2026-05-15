@@ -44,7 +44,8 @@ def handler(event, context) -> Dict[str, List[Dict[str, Union[str, int]]]]:
     # Get jsonl lines as list of json objects
     fastq_list = [
         json.loads(jsonl_file_content_line)
-        for jsonl_file_content_line in jsonl_file_contents.split("\n")[:-1]
+        for jsonl_file_content_line in jsonl_file_contents.splitlines()
+        if jsonl_file_content_line
     ]
 
     # Convert jsonl string to list of dicts
