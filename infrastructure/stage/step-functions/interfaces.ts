@@ -3,7 +3,6 @@ import { StateMachine } from 'aws-cdk-lib/aws-stepfunctions';
 
 import { LambdaName, LambdaObject } from '../lambda/interfaces';
 import { SsmParameterPaths } from '../ssm/interfaces';
-import { EcsFargateTaskConstruct } from '@orcabus/platform-cdk-constructs/ecs';
 import { EcsTaskObject } from '../ecs/interfaces';
 
 /**
