@@ -1,6 +1,11 @@
 /* Directory constants */
 import path from 'path';
-import { Genome, NotInBuiltInHmfReferenceGenomesType, WorkflowVersionType } from './interfaces';
+import {
+  Genome,
+  NotInBuiltInHmfReferenceGenomesType,
+  PayloadVersionType,
+  WorkflowVersionType,
+} from './interfaces';
 import { DATA_SCHEMA_REGISTRY_NAME } from '@orcabus/platform-cdk-constructs/shared-config/event-bridge';
 import {
   REFERENCE_DATA_BUCKET,
@@ -11,6 +16,7 @@ export const APP_ROOT = path.join(__dirname, '../../app');
 export const LAMBDA_DIR = path.join(APP_ROOT, 'lambdas');
 export const STEP_FUNCTIONS_DIR = path.join(APP_ROOT, 'step-functions-templates');
 export const EVENT_SCHEMAS_DIR = path.join(APP_ROOT, 'event-schemas');
+export const ECS_DIR = path.join(APP_ROOT, 'ecs');
 
 /* Workflow constants */
 export const WORKFLOW_NAME = 'oncoanalyser-wgts-rna';
@@ -20,7 +26,7 @@ export const DRAFT_STATUS = 'DRAFT';
 // existing production workflow, we need to filter on the payload version
 // to prevent the wrong service from being triggered
 export const DEFAULT_WORKFLOW_VERSION: WorkflowVersionType = '2.1.0';
-export const DEFAULT_PAYLOAD_VERSION = '2025.08.05';
+export const DEFAULT_PAYLOAD_VERSION: PayloadVersionType = '2026.05.12';
 
 // S3 placeholders
 export const WORKFLOW_LOGS_PREFIX = `s3://{__CACHE_BUCKET__}/{__CACHE_PREFIX__}logs/${WORKFLOW_NAME}/`;
