@@ -9,6 +9,51 @@
       "type": "string",
       "pattern": "^s3://[a-zA-Z0-9_-]+/[a-zA-Z0-9_./-]+/$"
     },
+    "cacheUri": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/s3UriDirectory"
+        },
+        {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": ".*/cache/.*"
+            }
+          ]
+        }
+      ]
+    },
+    "logsUri": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/s3UriDirectory"
+        },
+        {
+          "type": "string",
+          "pattern": ".*/logs/.*"
+        }
+      ]
+    },
+    "outputUri": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/s3UriDirectory"
+        },
+        {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": ".*/analysis/.*"
+            },
+            {
+              "type": "string",
+              "pattern": ".*/output/.*"
+            }
+          ]
+        }
+      ]
+    },
     "fastqListRow": {
       "type": "object",
       "properties": {
@@ -38,7 +83,7 @@
         }
       },
       "required": ["rgid", "rglb", "rgsm", "lane", "read1FileUri", "read2FileUri"],
-      "allowAdditionalProperties": true
+      "additionalProperties": true
     },
     "genomes": {
       "type": "object",
@@ -119,7 +164,7 @@
         }
       },
       "required": ["libraryId", "subjectId", "individualId", "fastqRgidList"],
-      "allowAdditionalProperties": true
+      "additionalProperties": true
     },
     "inputs": {
       "type": "object",
@@ -196,6 +241,28 @@
         "refDataHmfDataPath",
         "genomes"
       ]
+    },
+    "engineParameters": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "pipelineId": {
+          "type": "string"
+        },
+        "outputUri": {
+          "$ref": "#/$defs/outputUri"
+        },
+        "logsUri": {
+          "$ref": "#/$defs/logsUri"
+        },
+        "cacheUri": {
+          "$ref": "#/$defs/cacheUri"
+        }
+      },
+      "required": ["projectId", "pipelineId", "outputUri", "logsUri", "cacheUri"],
+      "additionalProperties": true
     }
   },
   "type": "object",
@@ -205,7 +272,10 @@
     },
     "inputs": {
       "$ref": "#/$defs/inputs"
+    },
+    "engineParameters": {
+      "$ref": "#/$defs/engineParameters"
     }
   },
-  "required": ["tags", "inputs"]
+  "required": ["tags", "inputs", "engineParameters"]
 }
