@@ -218,6 +218,12 @@ while read -r rgid; do
     is_paired_end="false"
   fi
 
+  # May not be any reads in the bam file from this rgid
+  # Even if its in the header
+  if [[ ! -f "${SPLIT_PREFIX}_${rgid}.bamstat" ]]; then
+    continue
+  fi
+
   # Write to jsonl
   jq --null-input \
     --raw-output --compact-output \
