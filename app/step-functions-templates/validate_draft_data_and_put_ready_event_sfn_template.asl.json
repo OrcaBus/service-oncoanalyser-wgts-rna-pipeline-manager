@@ -21,7 +21,7 @@
       "Arguments": {
         "FunctionName": "${__validate_draft_complete_schema_lambda_function_arn__}",
         "Payload": {
-          "payloadVersion": "{% $payload.version %}",
+          "payloadVersion": "{% $payload.version ? $payload.version : null %}",
           "data": "{% $payloadData %}",
           "workflowRunId": "{% $workflowRunId %}",
           "addCommentOnError": true

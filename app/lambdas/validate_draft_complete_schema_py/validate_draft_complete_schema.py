@@ -115,10 +115,14 @@ def handler(event, context) -> Dict[str, bool]:
     :return:
     """
     # Get the event data
-    payload_version = event.get("payloadVersion", environ[DEFAULT_PAYLOAD_VERSION_ENV_VAR])
+    payload_version = event.get("payloadVersion")
     payload_data = event.get('data')
     workflow_run_id = event.get("workflowRunId", "")
     comment_error = event.get("addCommentOnError", False)
+
+    # Set payload version if not defined
+    if payload_version is None:
+        payload_version = environ[DEFAULT_PAYLOAD_VERSION_ENV_VAR]
 
     # Get the SSM parameters
     schema_registry = get_ssm_parameter_value(environ[SSM_REGISTRY_NAME_ENV_VAR])
