@@ -123,7 +123,7 @@ function buildLambda(scope: Construct, props: LambdaInput): LambdaObject {
 
   /*
     Special if the lambdaName is 'validateDraftCompleteSchema', we need to add in the ssm parameters
-    to the REGISTRY_NAME and SCHEMA_NAME
+    to the REGISTRY_NAME and SCHEMA_PATH
    */
   if (props.lambdaName === 'validateDraftCompleteSchema') {
     const draftSchemaName: SchemaNames = 'completeDataDraft';
