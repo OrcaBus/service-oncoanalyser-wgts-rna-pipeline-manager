@@ -459,7 +459,7 @@
               "Choices": [
                 {
                   "Next": "Keep Original sequence data",
-                  "Condition": "{% $tags.fromBam %}",
+                  "Condition": "{% $tags.fromBam ? true : false %}",
                   "Comment": "From Bam (tags)"
                 }
               ],
