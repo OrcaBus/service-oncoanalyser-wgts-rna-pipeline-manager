@@ -3,10 +3,6 @@ import { PythonUvFunction } from '@orcabus/platform-cdk-constructs/lambda';
 export type LambdaName =
   // Shared pre-ready lambdas
   | 'comparePayload'
-  | 'getDraftPayload'
-  | 'findLatestWorkflow'
-  | 'getDragenOutputsFromPortalRunId'
-  | 'getWorkflowRunObject'
   | 'generateWruEventObjectWithMergedData'
   | 'getMissingSchemaFields'
   // Populate Draft lambdas
@@ -34,10 +30,6 @@ export type LambdaName =
 export const lambdaNameList: LambdaName[] = [
   // Shared pre-ready lambdas
   'comparePayload',
-  'getDraftPayload',
-  'findLatestWorkflow',
-  'getDragenOutputsFromPortalRunId',
-  'getWorkflowRunObject',
   'generateWruEventObjectWithMergedData',
   'getMissingSchemaFields',
   // Populate Draft lambdas
@@ -79,18 +71,6 @@ export interface LambdaRequirements {
 export const lambdaRequirementsMap: Record<LambdaName, LambdaRequirements> = {
   // Shared pre-ready lambdas
   comparePayload: {},
-  getDraftPayload: {
-    needsOrcabusApiTools: true,
-  },
-  findLatestWorkflow: {
-    needsOrcabusApiTools: true,
-  },
-  getDragenOutputsFromPortalRunId: {
-    needsOrcabusApiTools: true,
-  },
-  getWorkflowRunObject: {
-    needsOrcabusApiTools: true,
-  },
   generateWruEventObjectWithMergedData: {
     needsOrcabusApiTools: true,
   },

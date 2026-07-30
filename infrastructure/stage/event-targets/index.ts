@@ -30,18 +30,6 @@ export function buildIcav2WesEventStateChangeToWrscSfnTarget(
 export function buildAllEventBridgeTargets(props: EventBridgeTargetsProps) {
   for (const eventBridgeTargetsName of eventBridgeTargetsNameList) {
     switch (eventBridgeTargetsName) {
-      // Dragen WGTS DNA Succeeded to Glue
-      case 'upstreamSucceededEventToGlueSucceededEvents': {
-        buildWrscToSfnTarget(<AddSfnAsEventBridgeTargetProps>{
-          eventBridgeRuleObj: props.eventBridgeRuleObjects.find(
-            (eventBridgeObject) => eventBridgeObject.ruleName === 'upstreamSucceededEvent'
-          )?.ruleObject,
-          stateMachineObj: props.stepFunctionObjects.find(
-            (sfnObject) => sfnObject.stateMachineName === 'glueSucceededEventsToDraftUpdate'
-          )?.sfnObject,
-        });
-        break;
-      }
       // Draft Legacy to Populate Draft Data
       case 'draftToPopulateDraftDataSfnTarget': {
         buildWrscToSfnTarget(<AddSfnAsEventBridgeTargetProps>{

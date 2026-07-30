@@ -162,14 +162,11 @@ export const ICAV2_WES_STATE_CHANGE_DETAIL_TYPE = 'Icav2WesAnalysisStateChange';
 export const FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE = 'OraDecompressionRequestSync';
 export const WORKFLOW_MANAGER_EVENT_SOURCE = 'orcabus.workflowmanager';
 export const ICAV2_WES_EVENT_SOURCE = 'orcabus.icav2wesmanager';
-export const DRAGEN_WGTS_DNA_WORKFLOW_NAME = 'dragen-wgts-dna';
-
 export const FASTQ_SYNC_DETAIL_TYPE = 'FastqSync';
 
 /* Event rule constants */
 export const DRAFT_STATUS = 'DRAFT';
 export const READY_STATUS = 'READY';
-export const SUCCEEDED_STATUS = 'SUCCEEDED';
 
 /* Schema constants */
 export const SCHEMA_REGISTRY_NAME = DATA_SCHEMA_REGISTRY_NAME;

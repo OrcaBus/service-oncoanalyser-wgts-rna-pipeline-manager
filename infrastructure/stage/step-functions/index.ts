@@ -15,7 +15,6 @@ import * as cdk from 'aws-cdk-lib';
 import path from 'path';
 import {
   DEFAULT_PAYLOAD_VERSION,
-  DRAGEN_WGTS_DNA_WORKFLOW_NAME,
   DRAFT_STATUS,
   EVENT_SOURCE,
   FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE,
@@ -51,7 +50,6 @@ function createStateMachineDefinitionSubstitutions(props: BuildStepFunctionProps
 
   /* Common substitutions */
   definitionSubstitutions['__draft_status__'] = DRAFT_STATUS;
-  definitionSubstitutions['__dragen_wgts_dna_workflow_name__'] = DRAGEN_WGTS_DNA_WORKFLOW_NAME;
   definitionSubstitutions['__oncoanalyser_wgts_rna_workflow_name__'] = WORKFLOW_NAME;
 
   // Miscellaneous substitutions

@@ -9,8 +9,6 @@ import { EcsTaskObject } from '../ecs/interfaces';
  * Step Function Interfaces
  */
 export type StateMachineName =
-  // Glue code
-  | 'glueSucceededEventsToDraftUpdate'
   // Draft-to-Draft-Complete
   | 'populateDraftData'
   // Draft-to-Ready
@@ -21,8 +19,6 @@ export type StateMachineName =
   | 'icav2WesEventToWrscEvent';
 
 export const stateMachineNameList: StateMachineName[] = [
-  // Glue code
-  'glueSucceededEventsToDraftUpdate',
   // Draft-to-Draft-Complete
   'populateDraftData',
   // Draft-to-Ready
@@ -65,9 +61,6 @@ export type WireUpPermissionsProps = BuildStepFunctionProps & StepFunctionObject
 export type BuildStepFunctionsProps = Omit<BuildStepFunctionProps, 'stateMachineName'>;
 
 export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunctionRequirements> = {
-  glueSucceededEventsToDraftUpdate: {
-    needsEventPutPermission: true,
-  },
   populateDraftData: {
     needsEventPutPermission: true,
     needsSsmParameterStoreAccess: true,
@@ -85,14 +78,6 @@ export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunction
 };
 
 export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = {
-  glueSucceededEventsToDraftUpdate: [
-    'comparePayload',
-    'getDraftPayload',
-    'findLatestWorkflow',
-    'getDragenOutputsFromPortalRunId',
-    'getWorkflowRunObject',
-    'generateWruEventObjectWithMergedData',
-  ],
   populateDraftData: [
     'getLibraries',
     'getMetadataTags',
