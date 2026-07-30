@@ -20,7 +20,6 @@ then click on the offending Step Function link in the Slack message to be taken 
   - [FASTQ Input Issues](#fastq-input-issues)
   - [BAM-to-FASTQ Conversion Failures](#bam-to-fastq-conversion-failures)
 
-
 ## Analysis Stuck in DRAFT state
 
 If the analysis is stuck in DRAFT mode, there may be a couple of reasons for this.
@@ -58,14 +57,16 @@ The ICAv2 WES Manager may fail to create an analysis for any of the following re
 ### Project Not Set Up Correctly
 
 Common issues with new projects:
-* Ensure that the ICAv2 Production Service User has been added to the project with the correct permissions.
-* Ensure that the Notifications Channels have been set up correctly for the project.
+
+- Ensure that the ICAv2 Production Service User has been added to the project with the correct permissions.
+- Ensure that the Notifications Channels have been set up correctly for the project.
 
 ### Invalid Pipeline ID
 
 > The pipeline id specified is not available in the project id
 
 Mitigate with:
+
 ```shell
 icav2 projects enter <project_id>
 icav2 projectpipeline link <pipeline_id>
@@ -78,6 +79,7 @@ You will need to create a new workflow run after this change.
 > Data .x. is not available in the project id <project_id>
 
 If the FASTQ data is not accessible in the ICAv2 project, you may need to:
+
 1. Confirm the FASTQ URIs exist in S3
 2. Ensure the data is linked to the ICAv2 project
 3. Check that the FASTQ files have not been archived to Glacier
@@ -92,6 +94,7 @@ Check the analysis logs for memory-related failure messages.
 ### FASTQ Input Issues
 
 If the pipeline fails because FASTQ inputs are not accessible:
+
 1. Verify the FASTQ URIs are valid and accessible
 2. Check that the Fastq Glue service has resolved the FASTQ list rows correctly
 3. Confirm the FASTQ files are not in ORA format that requires decompression
@@ -99,10 +102,10 @@ If the pipeline fails because FASTQ inputs are not accessible:
 ### BAM-to-FASTQ Conversion Failures
 
 If the pipeline requires BAM-to-FASTQ conversion (via ECS tasks) and this step fails:
+
 1. Check the ECS task logs in CloudWatch for the specific error
 2. Verify the input BAM file is accessible and not corrupted
 3. Ensure the ECS cluster has sufficient capacity
-
 
 [aws_step_functions_console_prod]: https://472057503814.ap-southeast-2.console.aws.amazon.com/states/home?region=ap-southeast-2#/statemachines
 [sop_1_rel_path]: ../PM.OWR.1/PM.OWR.1-ManualPipelineExecution.md

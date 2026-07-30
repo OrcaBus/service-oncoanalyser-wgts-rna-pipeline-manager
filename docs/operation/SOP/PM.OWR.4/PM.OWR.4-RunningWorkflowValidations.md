@@ -11,7 +11,6 @@ This SOP describes how to run workflow validations for the Oncoanalyser WGTS RNA
 - [Expected Outputs](#expected-outputs)
 - [Validation Criteria](#validation-criteria)
 
-
 ## Introduction
 
 When deploying a new version of the Oncoanalyser WGTS RNA pipeline (new workflow version or parameter changes),
@@ -29,16 +28,17 @@ validation runs should be performed against known test datasets to confirm expec
 1. **Identify test libraries** — Use the standard validation RNA library.
 
 2. **Submit a validation DRAFT event** — Follow [PM.OWR.1][sop_1_rel_path] to submit a DRAFT event targeting the new pipeline version:
+
    ```json5
    {
-     "payload": {
-       "version": "<PAYLOAD_VERSION>",
-       "data": {
-         "engineParameters": {
-           "pipelineId": "<NEW_PIPELINE_ID>"
-         }
-       }
-     }
+     payload: {
+       version: '<PAYLOAD_VERSION>',
+       data: {
+         engineParameters: {
+           pipelineId: '<NEW_PIPELINE_ID>',
+         },
+       },
+     },
    }
    ```
 
@@ -49,6 +49,7 @@ validation runs should be performed against known test datasets to confirm expec
 ## Expected Outputs
 
 The Oncoanalyser WGTS RNA pipeline produces:
+
 - ISOFOX gene expression results
 - Fusion detection results
 - RNA-based variant calls
@@ -57,13 +58,13 @@ The Oncoanalyser WGTS RNA pipeline produces:
 ## Validation Criteria
 
 A validation run is considered successful when:
+
 1. The workflow run reaches SUCCEEDED status without manual intervention.
 2. All expected output files are present in the output URI.
 3. Key metrics (gene expression correlation, fusion detection sensitivity) are within acceptable ranges of the reference run.
 4. No unexpected errors or warnings appear in the execution logs.
 
 If validation fails, consult [PM.OWR.5 - Troubleshooting][sop_5_rel_path] for guidance.
-
 
 [sop_1_rel_path]: ../PM.OWR.1/PM.OWR.1-ManualPipelineExecution.md
 [sop_2_rel_path]: ../PM.OWR.2/PM.OWR.2-NewPipelineDeployment.md

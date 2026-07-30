@@ -11,7 +11,6 @@ This SOP describes how to update SSM parameters for the Oncoanalyser WGTS RNA pi
 - [Procedure](#procedure)
 - [Verification](#verification)
 
-
 ## Introduction
 
 The Oncoanalyser WGTS RNA Pipeline Manager uses AWS SSM Parameter Store to manage configuration values
@@ -26,16 +25,16 @@ All parameters live under the path `/orcabus/workflows/oncoanalyser-wgts-rna/`.
 
 ## Parameter Types
 
-| Parameter Path | Description | Example Value |
-|---|---|---|
-| `workflow-name` | The workflow name | `oncoanalyser-wgts-rna` |
-| `default-workflow-version` | Current default workflow version | `2.1.0` |
-| `payload-version` | Payload schema version | `2025.08.05` |
-| `icav2-project-id` | Default ICAv2 project ID | `ea19a3f5-ec7c-...` |
-| `output-prefix` | S3 prefix for analysis outputs | `s3://bucket/path/analysis/oncoanalyser-wgts-rna/` |
-| `logs-prefix` | S3 prefix for logs | `s3://bucket/path/logs/oncoanalyser-wgts-rna/` |
-| `pipeline-ids-by-workflow-version/<version>` | ICAv2 pipeline ID | `ab6e1d62-...` |
-| `inputs-by-workflow-version/<version>` | Default inputs JSON | `{"genome": "GRCh38_umccr", ...}` |
+| Parameter Path                               | Description                      | Example Value                                      |
+| -------------------------------------------- | -------------------------------- | -------------------------------------------------- |
+| `workflow-name`                              | The workflow name                | `oncoanalyser-wgts-rna`                            |
+| `default-workflow-version`                   | Current default workflow version | `2.1.0`                                            |
+| `payload-version`                            | Payload schema version           | `2025.08.05`                                       |
+| `icav2-project-id`                           | Default ICAv2 project ID         | `ea19a3f5-ec7c-...`                                |
+| `output-prefix`                              | S3 prefix for analysis outputs   | `s3://bucket/path/analysis/oncoanalyser-wgts-rna/` |
+| `logs-prefix`                                | S3 prefix for logs               | `s3://bucket/path/logs/oncoanalyser-wgts-rna/`     |
+| `pipeline-ids-by-workflow-version/<version>` | ICAv2 pipeline ID                | `ab6e1d62-...`                                     |
+| `inputs-by-workflow-version/<version>`       | Default inputs JSON              | `{"genome": "GRCh38_umccr", ...}`                  |
 
 ## Procedure
 
@@ -60,6 +59,5 @@ All parameters live under the path `/orcabus/workflows/oncoanalyser-wgts-rna/`.
    ```
 2. Trigger a test DRAFT event to verify the pipeline picks up the new parameter value.
    See [PM.OWR.1][sop_1_rel_path] for instructions.
-
 
 [sop_1_rel_path]: ../PM.OWR.1/PM.OWR.1-ManualPipelineExecution.md
