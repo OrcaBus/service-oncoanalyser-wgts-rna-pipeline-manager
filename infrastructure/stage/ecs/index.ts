@@ -67,17 +67,18 @@ function buildEcsFargateTask(scope: Construct, props: BuildFargateEcsTaskProps) 
     [
       {
         id: 'AwsSolutions-IAM5',
-        reason: 'The task role needs to access secrets manager.',
+        reason:
+          'Wildcard covers Secrets Manager GetSecretValue sub-resources; secret ARNs include version IDs and staging labels that cannot be enumerated at deploy time',
       },
       {
         id: 'AwsSolutions-IAM4',
         reason:
-          'We use the standard ecs task role for this task, which allows the guard duty agent to run alongside the task.',
+          'Standard ECS task execution role managed policy provides ECR pull and CloudWatch Logs permissions required by all Fargate tasks',
       },
       {
         id: 'AwsSolutions-ECS2',
         reason:
-          'The task is designed to run with some constant environment variables, not sure why this is a bad thing?',
+          'Environment variables contain non-sensitive configuration values (secret names, SSM parameter names, base URLs) that are safe to pass as plaintext',
       },
     ],
     true

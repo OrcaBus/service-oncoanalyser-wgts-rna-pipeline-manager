@@ -9,6 +9,8 @@ import { EcsTaskObject } from '../ecs/interfaces';
  * Step Function Interfaces
  */
 export type StateMachineName =
+  // Glue code
+  | 'glueSucceededEventsToDraftUpdate'
   // Draft-to-Draft-Complete
   | 'populateDraftData'
   // Draft-to-Ready
@@ -16,17 +18,19 @@ export type StateMachineName =
   // Ready-to-Submitted
   | 'readyEventToIcav2WesRequestEvent'
   // Post-submission event conversion
-  | 'icav2WesAscEventToWorkflowRscEvent';
+  | 'icav2WesEventToWrscEvent';
 
 export const stateMachineNameList: StateMachineName[] = [
-  // // Draft-to-Draft-Complete
+  // Glue code
+  'glueSucceededEventsToDraftUpdate',
+  // Draft-to-Draft-Complete
   'populateDraftData',
-  // // Draft-to-Ready
+  // Draft-to-Ready
   'validateDraftDataAndPutReadyEvent',
   // Ready-to-Submitted
   'readyEventToIcav2WesRequestEvent',
   // Post-submission event conversion
-  'icav2WesAscEventToWorkflowRscEvent',
+  'icav2WesEventToWrscEvent',
 ];
 
 // Requirements interface for Step Functions
@@ -61,6 +65,9 @@ export type WireUpPermissionsProps = BuildStepFunctionProps & StepFunctionObject
 export type BuildStepFunctionsProps = Omit<BuildStepFunctionProps, 'stateMachineName'>;
 
 export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunctionRequirements> = {
+  glueSucceededEventsToDraftUpdate: {
+    needsEventPutPermission: true,
+  },
   populateDraftData: {
     needsEventPutPermission: true,
     needsSsmParameterStoreAccess: true,
@@ -72,12 +79,20 @@ export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunction
     needsEventPutPermission: true,
     needsEcsPermissions: true,
   },
-  icav2WesAscEventToWorkflowRscEvent: {
+  icav2WesEventToWrscEvent: {
     needsEventPutPermission: true,
   },
 };
 
 export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = {
+  glueSucceededEventsToDraftUpdate: [
+    'comparePayload',
+    'getDraftPayload',
+    'findLatestWorkflow',
+    'getDragenOutputsFromPortalRunId',
+    'getWorkflowRunObject',
+    'generateWruEventObjectWithMergedData',
+  ],
   populateDraftData: [
     'getLibraries',
     'getMetadataTags',
@@ -87,6 +102,10 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
     'getQcSummaryStatsFromRgidList',
     'checkNtsmInternal',
     'validateDraftCompleteSchema',
+    'generateWruEventObjectWithMergedData',
+    'comparePayload',
+    'getMissingSchemaFields',
+    'addPopulateDraftComment',
   ],
   validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema', 'postSchemaValidation'],
   readyEventToIcav2WesRequestEvent: [
@@ -95,5 +114,5 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
     'getFastqIdListFromFastqRgidList',
     'convertReadyEventInputsToIcav2WesEventInputs',
   ],
-  icav2WesAscEventToWorkflowRscEvent: ['convertIcav2WesEventToWrscEvent'],
+  icav2WesEventToWrscEvent: ['convertIcav2WesEventToWrscEvent', 'addWesFailureComment'],
 };

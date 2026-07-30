@@ -1,17 +1,21 @@
-/* Directory constants */
+/* Imports */
+// Node
 import path from 'path';
+// Platform
+import { DATA_SCHEMA_REGISTRY_NAME } from '@orcabus/platform-cdk-constructs/shared-config/event-bridge';
+import {
+  REFERENCE_DATA_BUCKET,
+  TEST_DATA_BUCKET,
+} from '@orcabus/platform-cdk-constructs/shared-config/s3';
+// Local
 import {
   Genome,
   NotInBuiltInHmfReferenceGenomesType,
   PayloadVersionType,
   WorkflowVersionType,
 } from './interfaces';
-import { DATA_SCHEMA_REGISTRY_NAME } from '@orcabus/platform-cdk-constructs/shared-config/event-bridge';
-import {
-  REFERENCE_DATA_BUCKET,
-  TEST_DATA_BUCKET,
-} from '@orcabus/platform-cdk-constructs/shared-config/s3';
 
+/* Directory constants */
 export const APP_ROOT = path.join(__dirname, '../../app');
 export const LAMBDA_DIR = path.join(APP_ROOT, 'lambdas');
 export const STEP_FUNCTIONS_DIR = path.join(APP_ROOT, 'step-functions-templates');
@@ -20,7 +24,6 @@ export const ECS_DIR = path.join(APP_ROOT, 'ecs');
 
 /* Workflow constants */
 export const WORKFLOW_NAME = 'oncoanalyser-wgts-rna';
-export const DRAFT_STATUS = 'DRAFT';
 
 // However, because this workflow has the same workflow name as the
 // existing production workflow, we need to filter on the payload version
@@ -157,16 +160,16 @@ export const WORKFLOW_RUN_UPDATE_DETAIL_TYPE = 'WorkflowRunUpdate';
 export const ICAV2_WES_REQUEST_DETAIL_TYPE = 'Icav2WesRequest';
 export const ICAV2_WES_STATE_CHANGE_DETAIL_TYPE = 'Icav2WesAnalysisStateChange';
 export const FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE = 'OraDecompressionRequestSync';
-
 export const WORKFLOW_MANAGER_EVENT_SOURCE = 'orcabus.workflowmanager';
 export const ICAV2_WES_EVENT_SOURCE = 'orcabus.icav2wesmanager';
+export const DRAGEN_WGTS_DNA_WORKFLOW_NAME = 'dragen-wgts-dna';
 
 export const FASTQ_SYNC_DETAIL_TYPE = 'FastqSync';
 
 /* Event rule constants */
-// Yet to implement draft events into this service
-// export const DRAFT_STATUS = 'DRAFT';
+export const DRAFT_STATUS = 'DRAFT';
 export const READY_STATUS = 'READY';
+export const SUCCEEDED_STATUS = 'SUCCEEDED';
 
 /* Schema constants */
 export const SCHEMA_REGISTRY_NAME = DATA_SCHEMA_REGISTRY_NAME;

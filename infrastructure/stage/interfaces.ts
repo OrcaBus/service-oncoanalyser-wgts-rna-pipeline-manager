@@ -33,10 +33,6 @@ export interface StatelessApplicationStackConfig {
   // Stage Name
   stageName: StageName;
 
-  // Bucket stuff
-  refDataBucketName: string;
-  testDataBucketName: string;
-
   // SSM and secrets stuff
   icav2AccessTokenSecretId: string;
   orcabusTokenSecretId: string;

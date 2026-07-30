@@ -15,6 +15,7 @@ import * as cdk from 'aws-cdk-lib';
 import path from 'path';
 import {
   DEFAULT_PAYLOAD_VERSION,
+  DRAGEN_WGTS_DNA_WORKFLOW_NAME,
   DRAFT_STATUS,
   EVENT_SOURCE,
   FASTQ_DECOMPRESSION_REQUEST_DETAIL_TYPE,
@@ -23,6 +24,7 @@ import {
   READY_STATUS,
   STACK_PREFIX,
   STEP_FUNCTIONS_DIR,
+  WORKFLOW_NAME,
   WORKFLOW_RUN_STATE_CHANGE_DETAIL_TYPE,
   WORKFLOW_RUN_UPDATE_DETAIL_TYPE,
 } from '../constants';
@@ -46,6 +48,11 @@ function createStateMachineDefinitionSubstitutions(props: BuildStepFunctionProps
     definitionSubstitutions[sfnSubstitutionKey] =
       lambdaObject.lambdaFunction.latestVersion.functionArn;
   }
+
+  /* Common substitutions */
+  definitionSubstitutions['__draft_status__'] = DRAFT_STATUS;
+  definitionSubstitutions['__dragen_wgts_dna_workflow_name__'] = DRAGEN_WGTS_DNA_WORKFLOW_NAME;
+  definitionSubstitutions['__oncoanalyser_wgts_rna_workflow_name__'] = WORKFLOW_NAME;
 
   // Miscellaneous substitutions
   definitionSubstitutions['__draft_event_status__'] = DRAFT_STATUS;
@@ -137,7 +144,8 @@ function wireUpStateMachinePermissions(props: WireUpPermissionsProps): void {
     [
       {
         id: 'AwsSolutions-IAM5',
-        reason: 'We need to give access to the full prefix to run any lambda version',
+        reason:
+          'We invoke $LATEST to allow redrives after Lambda bug fixes without redeploying the state machine',
       },
     ],
     true
@@ -165,7 +173,8 @@ function wireUpStateMachinePermissions(props: WireUpPermissionsProps): void {
       [
         {
           id: 'AwsSolutions-IAM5',
-          reason: 'We need to give access to the full prefix for the SSM parameter store',
+          reason:
+            'Wildcard covers SSM parameters under the workflow root prefix; individual parameter paths include dynamic workflow versions that cannot be enumerated at deploy time',
         },
       ],
       true
@@ -194,7 +203,8 @@ function wireUpStateMachinePermissions(props: WireUpPermissionsProps): void {
       [
         {
           id: 'AwsSolutions-IAM5',
-          reason: 'Need ability to put targets and rules for ECS task monitoring',
+          reason:
+            'Wildcard not used; scoped to the specific StepFunctionsGetEventsForECSTaskRule event rule ARN required for ECS task state change monitoring',
         },
       ],
       true

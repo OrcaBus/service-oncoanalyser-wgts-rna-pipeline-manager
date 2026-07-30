@@ -7,6 +7,8 @@ import { StepFunctionObject } from '../step-functions/interfaces';
  * EventBridge Target Interfaces
  */
 export type EventBridgeTargetName =
+  // Dragen WGTS DNA Succeeded
+  | 'upstreamSucceededEventToGlueSucceededEvents'
   // Populate draft data event targets
   | 'draftToPopulateDraftDataSfnTarget'
   // Validate draft to ready
@@ -17,6 +19,8 @@ export type EventBridgeTargetName =
   | 'icav2WesAnalysisStateChangeEventToWrscSfnTarget';
 
 export const eventBridgeTargetsNameList: EventBridgeTargetName[] = [
+  // Dragen WGTS DNA Succeeded
+  'upstreamSucceededEventToGlueSucceededEvents',
   // Populate draft data event targets
   'draftToPopulateDraftDataSfnTarget',
   // Validate draft to ready
