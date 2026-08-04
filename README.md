@@ -6,7 +6,6 @@
   - [2. Populated DRAFT → READY](#2-populated-draft--ready)
   - [3. READY → ICAv2 submission](#3-ready--icav2-submission)
   - [4. ICAv2 state changes → WorkflowRunUpdate events](#4-icav2-state-changes--workflowrunupdate-events)
-  - [5. Upstream SUCCEEDED → DRAFT update (glue)](#5-upstream-succeeded--draft-update-glue)
 - [Event Contract](#event-contract)
   - [Consumed Events](#consumed-events)
   - [Published Events](#published-events)
@@ -30,18 +29,18 @@
 
 This service manages the lifecycle of the **Oncoanalyser WGTS RNA pipeline** — a somatic RNA analysis pipeline that performs RNA-based variant calling, gene expression analysis, and fusion detection using the Oncoanalyser toolchain (ISOFOX) on ICAv2.
 
-The pipeline runs on [ICAv2](https://www.illumina.com/products/by-type/informatics-products/connected-analytics.html) via CWL/Nextflow. See the [CWL releases](https://github.com/umccr/cwl-ica/releases?q=oncoanalyser-wgts-rna&expanded=true) for versioned workflow definitions. Orchestration follows the standard [ICAv2-centric Pipeline Architecture](https://github.com/OrcaBus/wiki/blob/main/orcabus-platform/README.md#pipeline-orchestration-general-logic).
+The pipeline runs on [ICAv2](https://www.illumina.com/products/by-type/informatics-products/connected-analytics.html) via Nextflow. See the [Nextflow releases](https://github.com/nf-core/oncoanalyser/releases) for versioned workflow definitions. Orchestration follows the standard [ICAv2-centric Pipeline Architecture](https://github.com/OrcaBus/wiki/blob/main/orcabus-platform/README.md#pipeline-orchestration-general-logic).
 
-This is a **downstream** service — it depends on the successful completion of the Dragen WGTS DNA pipeline (via a glue state machine) to obtain alignment BAM outputs as inputs.
+This is a **non-downstream (top-level)** service — it has no upstream pipeline dependencies and is triggered directly by analysis events. It runs in parallel with Dragen WGTS RNA (both consume RNA FASTQ inputs independently).
 
-**Upstream**: [Dragen WGTS DNA](https://github.com/OrcaBus/service-dragen-wgts-dna-pipeline-manager)
-**Downstream**: [Oncoanalyser WGTS Both](https://github.com/OrcaBus/service-oncoanalyser-wgts-both-pipeline-manager), [RNAsum](https://github.com/OrcaBus/service-rnasum-pipeline-manager)
+**Upstream**: None (triggered directly by analysis events)
+**Downstream**: [Oncoanalyser WGTS DNA-RNA](https://github.com/OrcaBus/service-oncoanalyser-wgts-both-pipeline-manager)
 
 ---
 
 ## Pipeline State Flow
 
-The service orchestrates five Step Functions state machines that together drive a workflow run from initial DRAFT submission through to ICAv2 execution and result reporting.
+The service orchestrates four Step Functions state machines that together drive a workflow run from initial DRAFT submission through to ICAv2 execution and result reporting.
 
 ### 1. DRAFT → populated DRAFT
 
@@ -87,7 +86,7 @@ Converts a READY event into an `Icav2WesRequest` event that the [ICAv2 WES Manag
 
 ### 4. ICAv2 state changes → WorkflowRunUpdate events
 
-**State machine**: [`icav2_wes_asc_event_to_workflow_rsc_event_sfn_template`](app/step-functions-templates/icav2_wes_asc_event_to_workflow_rsc_event_sfn_template.asl.json)
+**State machine**: [`icav2_wes_event_to_wrsc_event_sfn_template`](app/step-functions-templates/icav2_wes_event_to_wrsc_event_sfn_template.asl.json)
 
 ![ICAv2 WES event to WRSC](docs/draw-io-exports/icav2-wes-event-to-wrsc.svg)
 
@@ -98,19 +97,6 @@ Listens for `Icav2WesAnalysisStateChange` events and converts them into `Workflo
    - **SUCCEEDED** — collects Oncoanalyser RNA outputs (ISOFOX results), then pushes the WRSC event.
    - **FAILED** — writes a failure comment to the workflow run record, then pushes the WRSC event.
    - **Any other status** — pushes the WRSC event directly.
-
-### 5. Upstream SUCCEEDED → DRAFT update (glue)
-
-**State machine**: [`glue_succeeded_events_to_draft_update_sfn_template`](app/step-functions-templates/glue_succeeded_events_to_draft_update_sfn_template.asl.json)
-
-![Glue succeeded events to draft update](docs/draw-io-exports/glue-succeeded-events-to-draft-update.svg)
-
-Reacts to upstream Dragen WGTS DNA `SUCCEEDED` events and updates existing DRAFT runs with new alignment data:
-
-1. **Receive** upstream SUCCEEDED event (portalRunId, libraries, workflow info).
-2. **Find matching DRAFTs** — calls `findLatestWorkflow` with `status=DRAFT` for `oncoanalyser-wgts-rna` to find existing DRAFT runs matching the same libraries.
-3. **For each DRAFT** — fetches the DRAFT payload, gets upstream BAM outputs, merges them into the DRAFT payload, compares old vs new, and emits a WorkflowRunUpdate DRAFT event if changed.
-4. **No DRAFTs found** — exits silently (the glue event arrived before the DRAFT was created).
 
 ---
 
@@ -216,8 +202,8 @@ Event source: `orcabus.oncoanalyserwgtsrna`
 
 - **Lambda functions** (Python 3.14, ARM64) — one per task in the state machines; see [`app/lambdas/`](app/lambdas/)
 - **ECS tasks** — BAM-to-FASTQ conversion and FASTQ list row generation; see [`app/ecs/`](app/ecs/)
-- **Step Functions state machines** — five ASL templates in [`app/step-functions-templates/`](app/step-functions-templates/)
-- **EventBridge rules** — route incoming `WorkflowRunStateChange` (DRAFT/READY), `Icav2WesAnalysisStateChange`, and upstream SUCCEEDED events to the appropriate state machines
+- **Step Functions state machines** — four ASL templates in [`app/step-functions-templates/`](app/step-functions-templates/)
+- **EventBridge rules** — route incoming `WorkflowRunStateChange` (DRAFT/READY) and `Icav2WesAnalysisStateChange` events to the appropriate state machines
 
 ### Stacks
 
@@ -243,9 +229,7 @@ All changes merged to `main` are automatically built and deployed to `beta` and 
 
 | Role | Service |
 |---|---|
-| Upstream | [Dragen WGTS DNA](https://github.com/OrcaBus/service-dragen-wgts-dna-pipeline-manager) |
-| Downstream | [Oncoanalyser WGTS Both](https://github.com/OrcaBus/service-oncoanalyser-wgts-both-pipeline-manager) |
-| Downstream | [RNAsum](https://github.com/OrcaBus/service-rnasum-pipeline-manager) |
+| Downstream | [Oncoanalyser WGTS DNA-RNA](https://github.com/OrcaBus/service-oncoanalyser-wgts-both-pipeline-manager) |
 | ICAv2 execution | [ICAv2 WES Manager](https://github.com/OrcaBus/service-icav2-wes-manager) |
 | Workflow state | [Workflow Manager](https://github.com/OrcaBus/service-workflow-manager) |
 
@@ -259,7 +243,7 @@ All changes merged to `main` are automatically built and deployed to `beta` and 
 | [PM.OWR.2](docs/operation/SOP/PM.OWR.2/PM.OWR.2-NewPipelineDeployment.md) | Install and deploy a new pipeline version |
 | [PM.OWR.3](docs/operation/SOP/PM.OWR.3/PM.OWR.3-UpdatingPipelineParameters.md) | Update SSM parameters |
 | [PM.OWR.4](docs/operation/SOP/PM.OWR.4/PM.OWR.4-RunningWorkflowValidations.md) | Run workflow validations |
-| [PM.OWR.5](docs/operation/SOP/PM.OWR.5/PM.OWR.5-TroubleShooting.md) | Troubleshoot common issues |
+| [PM.OWR.5](docs/operation/SOP/PM.OWR.5/PM.OWR.5-TroubleShooting.md) | Troubleshooting common issues |
 
 ---
 

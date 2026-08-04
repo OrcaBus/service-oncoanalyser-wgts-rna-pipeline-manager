@@ -23,7 +23,7 @@
 
 ## Package Manager
 
-**pnpm** (v11.8.0). Always use `pnpm`, never `npm` or `yarn`.
+**pnpm** (v11.17.0). Always use `pnpm`, never `npm` or `yarn`.
 
 ```sh
 corepack enable pnpm
@@ -31,7 +31,7 @@ corepack enable pnpm
 
 ## Node Version
 
-Node 22.9.0
+Node 24.x
 
 ## Build / Test / Lint Commands
 
