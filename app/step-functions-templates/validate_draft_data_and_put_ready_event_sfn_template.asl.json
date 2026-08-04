@@ -24,7 +24,7 @@
           "payloadVersion": "{% $payload.version ? $payload.version : null %}",
           "data": "{% $payloadData %}",
           "workflowRunId": "{% $workflowRunId %}",
-          "addCommentOnError": true
+          "addCommentOnError": false
         }
       },
       "Retry": [
@@ -61,7 +61,8 @@
         "FunctionName": "${__post_schema_validation_lambda_function_arn__}",
         "Payload": {
           "data": "{% $payloadData %}",
-          "workflowRunId": "{% $workflowRunId %}"
+          "workflowRunId": "{% $workflowRunId %}",
+          "executionArn": "{% $states.context.Execution.Id %}"
         }
       },
       "Retry": [
@@ -79,9 +80,7 @@
         }
       ],
       "Next": "Post Schema Validation Passing",
-      "Output": {
-        "isValid": "{% $states.result.Payload.isValid %}"
-      }
+      "Output": "{% $states.result.Payload %}"
     },
     "Post Schema Validation Passing": {
       "Type": "Choice",

@@ -16,17 +16,17 @@ export type StateMachineName =
   // Ready-to-Submitted
   | 'readyEventToIcav2WesRequestEvent'
   // Post-submission event conversion
-  | 'icav2WesAscEventToWorkflowRscEvent';
+  | 'icav2WesEventToWrscEvent';
 
 export const stateMachineNameList: StateMachineName[] = [
-  // // Draft-to-Draft-Complete
+  // Draft-to-Draft-Complete
   'populateDraftData',
-  // // Draft-to-Ready
+  // Draft-to-Ready
   'validateDraftDataAndPutReadyEvent',
   // Ready-to-Submitted
   'readyEventToIcav2WesRequestEvent',
   // Post-submission event conversion
-  'icav2WesAscEventToWorkflowRscEvent',
+  'icav2WesEventToWrscEvent',
 ];
 
 // Requirements interface for Step Functions
@@ -72,7 +72,7 @@ export const stepFunctionsRequirementsMap: Record<StateMachineName, StepFunction
     needsEventPutPermission: true,
     needsEcsPermissions: true,
   },
-  icav2WesAscEventToWorkflowRscEvent: {
+  icav2WesEventToWrscEvent: {
     needsEventPutPermission: true,
   },
 };
@@ -87,6 +87,10 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
     'getQcSummaryStatsFromRgidList',
     'checkNtsmInternal',
     'validateDraftCompleteSchema',
+    'generateWruEventObjectWithMergedData',
+    'comparePayload',
+    'getMissingSchemaFields',
+    'addPopulateDraftComment',
   ],
   validateDraftDataAndPutReadyEvent: ['validateDraftCompleteSchema', 'postSchemaValidation'],
   readyEventToIcav2WesRequestEvent: [
@@ -95,5 +99,5 @@ export const stepFunctionToLambdasMap: Record<StateMachineName, LambdaName[]> = 
     'getFastqIdListFromFastqRgidList',
     'convertReadyEventInputsToIcav2WesEventInputs',
   ],
-  icav2WesAscEventToWorkflowRscEvent: ['convertIcav2WesEventToWrscEvent'],
+  icav2WesEventToWrscEvent: ['convertIcav2WesEventToWrscEvent', 'addWesFailureComment'],
 };
