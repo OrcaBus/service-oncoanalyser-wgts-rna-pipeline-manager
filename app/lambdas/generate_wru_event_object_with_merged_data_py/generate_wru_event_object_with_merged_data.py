@@ -23,8 +23,8 @@ def handler(event, context):
     payload = event.get("payload", None)
     upstream_data = event.get("upstreamData", {})
 
-    # Get the bam uri from upstream dragen-wgts-dna
-    dragen_tumor_rna_bam_uri = upstream_data.get('dragenTumorRnaBamUri', None)
+    # Get the bam uri from upstream data (if provided)
+    bam_uri = upstream_data.get('bamUri', None)
 
     # Create a copy of the draft workflow run object to update
     draft_workflow_run = get_workflow_run_from_portal_run_id(
@@ -50,7 +50,7 @@ def handler(event, context):
 
     # Check if the draft payload already has the fields we would update
     if (
-            payload['data'].get("inputs", {}).get("tumorRnaBamUri", None) is not None
+            payload['data'].get("inputs", {}).get("bamUri", None) is not None
     ):
         # Return the OG, we dont want to overwrite existing data
         draft_workflow_update["payload"] = {
@@ -65,7 +65,7 @@ def handler(event, context):
     new_data_object = payload['data'].copy()
     if new_data_object.get("inputs", None) is None:
         new_data_object["inputs"] = {}
-    new_data_object["inputs"]["tumorRnaBamUri"] = dragen_tumor_rna_bam_uri
+    new_data_object["inputs"]["bamUri"] = bam_uri
 
     # Drop null keys in inputs
     new_data_object["inputs"] = dict(filter(
